@@ -28,6 +28,33 @@ struct Texture
     std::string filepath;
 };
 
+struct VertexV3V2
+{
+    glm::vec3 pos;
+    glm::vec2 uv;
+};
+
+const VertexV3V2 vertices[] = {
+    {glm::vec3(-0.5,-0.5,0.0),glm::vec2(0.0,0.0)}, //bottom right
+    {glm::vec3(0.5,-0.5,0.0),glm::vec2(1.0,0.0)}, //bottom left
+    {glm::vec3(0.5,0.5,0.0),glm::vec2(1.0,1.0)}, //top right
+    {glm::vec3(-0.5,0.5,0.0),glm::vec2(0.0,1.0)}, //top left
+};
+
+const u16 indices[] = {
+    0,1,2,
+    0,2,3
+};
+
+struct OpenGLInfo
+{
+    std::string version;
+    std::string renderer;
+    std::string vendor;
+    std::string GLSLVersion;
+    std::string extensions;
+};
+
 struct Program
 {
     GLuint             handle;
@@ -69,6 +96,9 @@ struct App
     u32 blackTexIdx;
     u32 normalTexIdx;
     u32 magentaTexIdx;
+
+    //Info
+    OpenGLInfo info;
 
     // Mode
     Mode mode;

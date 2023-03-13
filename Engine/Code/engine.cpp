@@ -9,6 +9,7 @@
 #include <imgui.h>
 #include <stb_image.h>
 #include <stb_image_write.h>
+#include <iostream>
 
 GLuint CreateProgramFromSource(String programSource, const char* shaderName)
 {
@@ -188,6 +189,31 @@ void Init(App* app)
     // - textures
 
     app->mode = Mode_TexturedQuad;
+
+    //INFO
+    app->info.version = (char*)glGetString(GL_VERSION);
+    app->info.renderer = (char*)glGetString(GL_RENDERER);
+    app->info.vendor = (char*)glGetString(GL_VENDOR);
+    app->info.GLSLVersion = (char*)glGetString(GL_SHADING_LANGUAGE_VERSION);
+    app->info.extensions = (char*)"";
+    GLint num_extensions;
+    glGetIntegerv(GL_NUM_EXTENSIONS, &num_extensions);
+    for (int i = 0; i < num_extensions; ++i)
+    {
+        app->info.extensions += (const char*)glGetStringi(GL_EXTENSIONS, GLuint(i));
+        app->info.extensions += " ";
+    }
+
+    //Geometry
+    glGenBuffers(1, &app->embeddedVertices);
+    glBindBuffer(GL_ARRAY_BUFFER, app->embeddedVertices);
+    glBufferData(GL_ARRAY_BUFFER, sizeof(vertices), vertices, GL_STATIC_DRAW);
+    glBindBuffer(GL_ARRAY_BUFFER, 0);
+
+    glGenBuffers(1, &app->embeddedElements);
+    glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, app->embeddedElements);
+    glBufferData(GL_ELEMENT_ARRAY_BUFFER, sizeof(indices), indices, GL_STATIC_DRAW);
+    glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, 0);
 }
 
 void Gui(App* app)
@@ -195,6 +221,17 @@ void Gui(App* app)
     ImGui::Begin("Info");
     ImGui::Text("FPS: %f", 1.0f/app->deltaTime);
     ImGui::End();
+    //TODO: INFO PANEL
+    if (ImGui::BeginMenu("ImGui"))
+    {
+        ImGui::BulletText(app->info.version.c_str());
+        ImGui::BulletText(app->info.renderer.c_str());
+        ImGui::BulletText(app->info.vendor.c_str());
+        ImGui::BulletText(app->info.GLSLVersion.c_str());
+        ImGui::Text(app->info.extensions.c_str());
+        ImGui::EndMenu();
+    }
+
 }
 
 void Update(App* app)
