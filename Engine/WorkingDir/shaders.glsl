@@ -26,7 +26,7 @@ layout(location=0) out vec4 oColor;
 
 void main()
 {
-	oColor = texture(uTexture,uTexCoord);
+	oColor = texture(uTexture,vTexCoord);
 }
 
 #endif
