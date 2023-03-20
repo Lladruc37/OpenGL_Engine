@@ -34,6 +34,7 @@
   <ItemGroup>
     <ClInclude Include="Code\BufferObjects.h" />
     <ClInclude Include="Code\engine.h" />
+    <ClInclude Include="Code\MeshObjects.h" />
     <ClInclude Include="Code\platform.h" />
     <ClInclude Include="ThirdParty\glad\include\glad\glad.h" />
     <ClInclude Include="ThirdParty\glad\include\glad\khrplatform.h" />

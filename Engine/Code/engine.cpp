@@ -222,8 +222,8 @@ GLuint FindVAO(Mesh& mesh, u32 submeshIndex, const Program& program)
 
             assert(attributeWasLinked); //The submesh should provide an attribute for each vertex inputs
 
-            glGetProgramiv(programHandle, GL_ACTIVE_ATTRIBUTES, &attributeCount);
-            glGetActiveAttrib(programHandle, i,
+            glGetProgramiv(program.handle, GL_ACTIVE_ATTRIBUTES, &attributeCount);
+            glGetActiveAttrib(program.handle, i,
                 ARRAY_COUNT(attributeName),
                 &attributeNameLength,
                 &attributeSize,

@@ -95,6 +95,9 @@
     <ClInclude Include="Code\BufferObjects.h">
       <Filter>Engine</Filter>
     </ClInclude>
+    <ClInclude Include="Code\MeshObjects.h">
+      <Filter>Engine</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <None Include="WorkingDir\shaders.glsl">
