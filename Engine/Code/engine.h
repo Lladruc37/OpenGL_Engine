@@ -5,6 +5,7 @@
 #pragma once
 
 #include "platform.h"
+#include "BufferObjects.h"
 #include <glad/glad.h>
 
 typedef glm::vec2  vec2;
@@ -61,6 +62,43 @@ struct Program
     std::string        filepath;
     std::string        programName;
     u64                lastWriteTimestamp; // What is this for?
+    VertexBufferLayout vertexInputLayout;
+};
+
+struct Model
+{
+    u32 meshIdx;
+    std::vector<u32> materialIdx;
+};
+
+struct Submesh
+{
+    VertexBufferLayout vertexBufferLayout;
+    std::vector<f32> vertices;
+    std::vector<u32> indices;
+    u32 vertexOffset;
+    u32 indexOffset;
+    std::vector<VAO> vaos;
+};
+
+struct Mesh
+{
+    std::vector<Submesh> submeshes;
+    GLuint vertexBufferHandle;
+    GLuint indexBufferHandle;
+};
+
+struct Material
+{
+    std::string name;
+    vec3 albedo;
+    vec3 emissive;
+    f32 smoothness;
+    u32 albedoTextureIdx;
+    u32 emissiveTextureIdx;
+    u32 specularTextureIdx;
+    u32 normalsTextureIdx;
+    u32 bumpTextureIdx;
 };
 
 enum Mode
@@ -85,10 +123,13 @@ struct App
     ivec2 displaySize;
 
     std::vector<Texture>  textures;
+    std::vector<Material> materials;
+    std::vector<Mesh> meshes;
+    std::vector<Model> models;
     std::vector<Program>  programs;
 
     // program indices
-    u32 texturedGeometryProgramIdx;
+    u32 texturedMeshProgramIdx;
     
     // texture indices
     u32 diceTexIdx;
