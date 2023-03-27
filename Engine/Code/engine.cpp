@@ -142,8 +142,8 @@ GLuint CreateTexture2DFromImage(Image image)
     glGenTextures(1, &texHandle);
     glBindTexture(GL_TEXTURE_2D, texHandle);
     glTexImage2D(GL_TEXTURE_2D, 0, internalFormat, image.size.x, image.size.y, 0, dataFormat, dataType, image.pixels);
-    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
-    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR_MIPMAP_LINEAR);
+    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR_MIPMAP_LINEAR);
+    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
     glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_R, GL_CLAMP_TO_EDGE);
     glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE);
     glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE);
@@ -222,14 +222,15 @@ GLuint FindVAO(Mesh& mesh, u32 submeshIndex, const Program& program)
 
             assert(attributeWasLinked); //The submesh should provide an attribute for each vertex inputs
 
-            glGetProgramiv(program.handle, GL_ACTIVE_ATTRIBUTES, &attributeCount);
-            glGetActiveAttrib(program.handle, i,
-                ARRAY_COUNT(attributeName),
-                &attributeNameLength,
-                &attributeSize,
-                &attributeType,
-                attributeName);
-            attributeLocation = glGetAttribLocation(programHandle, attributeName);
+            //TODO: Shader reflection
+            //glGetProgramiv(program.handle, GL_ACTIVE_ATTRIBUTES, &attributeCount);
+            //glGetActiveAttrib(program.handle, i,
+            //    ARRAY_COUNT(attributeName),
+            //    &attributeNameLength,
+            //    &attributeSize,
+            //    &attributeType,
+            //    attributeName);
+            //attributeLocation = glGetAttribLocation(programHandle, attributeName);
 
         }
         glBindVertexArray(0);
@@ -267,40 +268,7 @@ void Init(App* app)
         app->info.extensions += " ";
     }
 
-    //Geometry
-    glGenBuffers(1, &app->embeddedVertices);
-    glBindBuffer(GL_ARRAY_BUFFER, app->embeddedVertices);
-    glBufferData(GL_ARRAY_BUFFER, sizeof(vertices), vertices, GL_STATIC_DRAW);
-    glBindBuffer(GL_ARRAY_BUFFER, 0);
-
-    glGenBuffers(1, &app->embeddedElements);
-    glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, app->embeddedElements);
-    glBufferData(GL_ELEMENT_ARRAY_BUFFER, sizeof(indices), indices, GL_STATIC_DRAW);
-    glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, 0);
-
-    //Attribute State
-    //Create the vertex format
-    VertexBufferLayout vertexBufferLayout = {};
-    vertexBufferLayout.attributes.push_back(VertexBufferAttribute{ 0, 3, 0 }); //3D pos
-    vertexBufferLayout.attributes.push_back(VertexBufferAttribute{2,2,3*sizeof(f32)}); //tex Coords
-    vertexBufferLayout.stride = 5 * sizeof(f32);
-
-    //Add submesh
-    Submesh submesh = {};
-    submesh.vertexBufferLayout = vertexBufferLayout;
-    submesh.vertices.swap(vertices);
-    submesh.indices.swap(indices);
-    myMesh->submeshes.push_back(submesh);
-    // OLD
-    //glGenVertexArrays(1, &app->vao);
-    //glBindVertexArray(app->vao);
-    //glBindBuffer(GL_ARRAY_BUFFER, app->embeddedVertices);
-    //glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, sizeof(VertexV3V2), (void*)0);
-    //glEnableVertexAttribArray(0);
-    //glVertexAttribPointer(1, 2, GL_FLOAT, GL_FALSE, sizeof(VertexV3V2), (void*)12);
-    //glEnableVertexAttribArray(1);
-    //glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, app->embeddedElements);
-    //glBindVertexArray(0);
+    app->modelIdx = LoadModel(app,"Patrick/Patrick.obj");
 
     //Program initialization
     app->texturedMeshProgramIdx = LoadProgram(app, "shaders.glsl", "SHOW_TEXTURED_MESH"/*"TEXTURED_GEOMETRY"*/);
@@ -359,7 +327,7 @@ void Render(App* app)
 
         Program& texturedMeshProgram = app->programs[app->texturedMeshProgramIdx];
         glUseProgram(texturedMeshProgram.handle);
-        Model& model = app->models[app->model];
+        Model& model = app->models[app->modelIdx];
         Mesh& mesh = app->meshes[model.meshIdx];
 
         for (u32 i = 0; i < mesh.submeshes.size(); ++i)
@@ -372,7 +340,7 @@ void Render(App* app)
 
             glActiveTexture(GL_TEXTURE0);
             glBindTexture(GL_TEXTURE_2D, app->textures[submeshMaterial.albedoTextureIdx].handle);
-            glUniform1i(app->texturedMeshProgram_uTexture, 0);
+            glUniform1i(app->programUniformTexture, 0);
 
             Submesh& submesh = mesh.submeshes[i];
             glDrawElements(GL_TRIANGLES, submesh.indices.size(), GL_UNSIGNED_INT, (void*)(u64)submesh.indexOffset);

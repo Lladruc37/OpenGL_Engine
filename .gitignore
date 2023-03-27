@@ -396,3 +396,5 @@ FodyWeavers.xsd
 
 # JetBrains Rider
 *.sln.iml
+
+!Engine/WorkingDir/Patrick/Patrick.obj

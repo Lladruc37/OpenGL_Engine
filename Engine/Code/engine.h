@@ -6,6 +6,7 @@
 
 #include "platform.h"
 #include "BufferObjects.h"
+#include "assimp_model_loading.h"
 #include <glad/glad.h>
 
 typedef glm::vec2  vec2;
@@ -122,6 +123,7 @@ struct App
 
     ivec2 displaySize;
 
+    u32 modelIdx;
     std::vector<Texture>  textures;
     std::vector<Material> materials;
     std::vector<Mesh> meshes;
@@ -164,3 +166,16 @@ void Update(App* app);
 
 void Render(App* app);
 
+GLuint FindVAO(Mesh& mesh, u32 submeshIndex, const Program& program);
+
+u32 LoadTexture2D(App* app, const char* filepath);
+
+GLuint CreateTexture2DFromImage(Image image);
+
+void FreeImage(Image image);
+
+Image LoadImage(const char* filename);
+
+u32 LoadProgram(App* app, const char* filepath, const char* programName);
+
+GLuint CreateProgramFromSource(String programSource, const char* shaderName);
