@@ -7,6 +7,7 @@
 #include "platform.h"
 #include "BufferObjects.h"
 #include "assimp_model_loading.h"
+#include "Debugging.h"
 #include <glad/glad.h>
 
 typedef glm::vec2  vec2;

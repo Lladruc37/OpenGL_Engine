@@ -265,13 +265,23 @@ void Init(App* app)
     for (int i = 0; i < num_extensions; ++i)
     {
         app->info.extensions += (const char*)glGetStringi(GL_EXTENSIONS, GLuint(i));
-        app->info.extensions += " ";
+        app->info.extensions += "\n";
+    }
+
+    //Debugging
+    int flags; glGetIntegerv(GL_CONTEXT_FLAGS, &flags);
+    if (flags & GL_CONTEXT_FLAG_DEBUG_BIT)
+    {
+        glEnable(GL_DEBUG_OUTPUT);
+        glEnable(GL_DEBUG_OUTPUT_SYNCHRONOUS);
+        glDebugMessageCallback(glDebugOutput, nullptr);
+        glDebugMessageControl(GL_DONT_CARE, GL_DONT_CARE, GL_DONT_CARE, 0, nullptr, GL_TRUE);
     }
 
     app->modelIdx = LoadModel(app,"Patrick/Patrick.obj");
 
     //Program initialization
-    app->texturedMeshProgramIdx = LoadProgram(app, "shaders.glsl", "SHOW_TEXTURED_MESH"/*"TEXTURED_GEOMETRY"*/);
+    app->texturedMeshProgramIdx = LoadProgram(app, "shaders.glsl", /*"SHOW_TEXTURED_MESH"*/"TEXTURED_GEOMETRY");
     Program& texturedMeshProgram = app->programs[app->texturedMeshProgramIdx];
     //app->programUniformTexture = glGetUniformLocation(texturedGeometryProgram.handle, "uTexture");
     texturedMeshProgram.vertexInputLayout.attributes.push_back({ 0,3 }); //pos
@@ -298,6 +308,7 @@ void Gui(App* app)
         ImGui::BulletText(app->info.renderer.c_str());
         ImGui::BulletText(app->info.vendor.c_str());
         ImGui::BulletText(app->info.GLSLVersion.c_str());
+        ImGui::Text("Extensions:");
         ImGui::Text(app->info.extensions.c_str());
         ImGui::EndMenu();
     }

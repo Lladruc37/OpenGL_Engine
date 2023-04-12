@@ -19,7 +19,7 @@ void main()
 
 	float clippingScale = 5.0;
 
-	gl_Position = vec4(aPosition,1.0);
+	gl_Position = vec4(aPosition,clippingScale);
 	gl_Position.z = -gl_Position.z;
 }
 
