@@ -101,6 +101,19 @@ u32 LoadProgram(App* app, const char* filepath, const char* programName)
     program.lastWriteTimestamp = GetFileLastWriteTimestamp(filepath);
     app->programs.push_back(program);
 
+    Program& texturedMeshProgram = app->programs[app->texturedMeshProgramIdx];
+    //app->programUniformTexture = glGetUniformLocation(texturedGeometryProgram.handle, "uTexture");
+    texturedMeshProgram.vertexInputLayout.attributes.push_back({ 0,3 }); //pos
+    texturedMeshProgram.vertexInputLayout.attributes.push_back({ 2,2 }); //tex Coords
+
+    //Vertex Shader Layout
+    int attributeCount = 0;
+    glGetProgramiv(program.handle, GL_ACTIVE_ATTRIBUTES, &attributeCount);
+    for (int i = 0; i < attributeCount; ++i)
+    {
+        glGetActiveAttrib(program.handle, i, ARRAY_COUNT(attributeName), &attributeNameLength, &attributeSize, &attributeType, attributeName);
+    }
+
     return app->programs.size() - 1;
 }
 
@@ -282,10 +295,6 @@ void Init(App* app)
 
     //Program initialization
     app->texturedMeshProgramIdx = LoadProgram(app, "shaders.glsl", /*"SHOW_TEXTURED_MESH"*/"TEXTURED_GEOMETRY");
-    Program& texturedMeshProgram = app->programs[app->texturedMeshProgramIdx];
-    //app->programUniformTexture = glGetUniformLocation(texturedGeometryProgram.handle, "uTexture");
-    texturedMeshProgram.vertexInputLayout.attributes.push_back({ 0,3 }); //pos
-    texturedMeshProgram.vertexInputLayout.attributes.push_back({ 2,2 }); //tex Coords
 
 
     //Texture initialization
