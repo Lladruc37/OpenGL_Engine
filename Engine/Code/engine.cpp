@@ -99,21 +99,48 @@ u32 LoadProgram(App* app, const char* filepath, const char* programName)
     program.filepath = filepath;
     program.programName = programName;
     program.lastWriteTimestamp = GetFileLastWriteTimestamp(filepath);
-    app->programs.push_back(program);
 
-    Program& texturedMeshProgram = app->programs[app->texturedMeshProgramIdx];
-    //app->programUniformTexture = glGetUniformLocation(texturedGeometryProgram.handle, "uTexture");
-    texturedMeshProgram.vertexInputLayout.attributes.push_back({ 0,3 }); //pos
-    texturedMeshProgram.vertexInputLayout.attributes.push_back({ 2,2 }); //tex Coords
+    app->programUniformTexture = glGetUniformLocation(program.handle, "uTexture");
 
     //Vertex Shader Layout
     int attributeCount = 0;
+    int attributeNameMaxLength = 0;
+    char* attributeName;
     glGetProgramiv(program.handle, GL_ACTIVE_ATTRIBUTES, &attributeCount);
+    glGetProgramiv(program.handle, GL_ACTIVE_ATTRIBUTE_MAX_LENGTH, &attributeNameMaxLength);
+
+    attributeName = new char[attributeNameMaxLength++];
+
     for (int i = 0; i < attributeCount; ++i)
     {
-        glGetActiveAttrib(program.handle, i, ARRAY_COUNT(attributeName), &attributeNameLength, &attributeSize, &attributeType, attributeName);
-    }
+        int attributeNameLength = 0;
+        int attributeSize = 0;
+        GLenum attributeType;
+        glGetActiveAttrib(program.handle, i, attributeNameMaxLength + 1, &attributeNameLength, &attributeSize, &attributeType, attributeName);
+        u8 attributeLocation = glGetAttribLocation(program.handle, attributeName);
 
+        u8 componentCount = 1;
+        switch (attributeType)
+        {
+        case GL_FLOAT:
+            componentCount = 1;
+            break;
+        case GL_FLOAT_VEC2:
+            componentCount = 2;
+            break;
+        case GL_FLOAT_VEC3:
+            componentCount = 3;
+            break;
+        case GL_FLOAT_VEC4:
+            componentCount = 4;
+            break;
+        default:
+            break;
+        }
+        program.vertexInputLayout.attributes.push_back({ attributeLocation,componentCount });
+    }
+    delete[] attributeName;
+    app->programs.push_back(program);
     return app->programs.size() - 1;
 }
 
@@ -296,6 +323,34 @@ void Init(App* app)
     //Program initialization
     app->texturedMeshProgramIdx = LoadProgram(app, "shaders.glsl", /*"SHOW_TEXTURED_MESH"*/"TEXTURED_GEOMETRY");
 
+    //TextQuad
+    VertexV3V2 vertices[] = {
+    {glm::vec3(-0.5,-0.5,0.0),glm::vec2(0.0,0.0)}, //bottom right
+    {glm::vec3(0.5,-0.5,0.0),glm::vec2(1.0,0.0)}, //bottom left
+    {glm::vec3(0.5,0.5,0.0),glm::vec2(1.0,1.0)}, //top right
+    {glm::vec3(-0.5,0.5,0.0),glm::vec2(0.0,1.0)}, //top left
+    };
+    u16 indices[] = {
+        0,1,2,
+        0,2,3
+    };
+
+    Mesh TextQuad;
+    Submesh subMesh;
+    subMesh.indices = {
+        0,1,2,
+        0,2,3
+    };
+    //pos, uv
+    subMesh.vertices = {
+    -0.5f, -0.5f, 0.0f, 0.0f, 0.0f, //bottom right
+    0.5f, -0.5f, 0.0f, 1.0f, 0.0f, //bottom left
+    0.5f, 0.5f, 0.0f, 1.0f, 1.0f, //top right
+    -0.5f, 0.5f, 0.0f, 0.0f, 1.0f, //top left
+    };
+    TextQuad.submeshes.push_back(subMesh);
+
+    app->texturedQuadProgramIdx = LoadProgram(app, "shaders.glsl", "TEXTURED_QUAD");
 
     //Texture initialization
     app->diceTexIdx = LoadTexture2D(app, "dice.png");
@@ -366,28 +421,28 @@ void Render(App* app)
             glDrawElements(GL_TRIANGLES, submesh.indices.size(), GL_UNSIGNED_INT, (void*)(u64)submesh.indexOffset);
         }
 
-        //OLD
-        //glClearColor(0.1f, 0.1f, 0.1f, 1.0f);
-        //glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
+        //Textured Quad
+        glClearColor(0.1f, 0.1f, 0.1f, 1.0f);
+        glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 
-        //glViewport(0, 0, app->displaySize.x, app->displaySize.y);
+        glViewport(0, 0, app->displaySize.x, app->displaySize.y);
 
-        //Program& programTextureGeometry = app->programs[app->texturedMeshProgramIdx];
-        //glUseProgram(programTextureGeometry.handle);
-        //glBindVertexArray(app->vao);
+        Program& programTextureGeometry = app->programs[app->texturedQuadProgramIdx];
+        glUseProgram(programTextureGeometry.handle);
+        glBindVertexArray(app->vao);
 
-        //glEnable(GL_BLEND);
-        //glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
+        glEnable(GL_BLEND);
+        glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
 
-        //glUniform1i(app->programUniformTexture, 0);
-        //glActiveTexture(GL_TEXTURE0);
-        //GLuint textureHandle = app->textures[app->diceTexIdx].handle;
-        //glBindTexture(GL_TEXTURE_2D, textureHandle);
+        glUniform1i(app->programUniformTexture, 0);
+        glActiveTexture(GL_TEXTURE0);
+        GLuint textureHandle = app->textures[app->diceTexIdx].handle;
+        glBindTexture(GL_TEXTURE_2D, textureHandle);
 
-        //glDrawElements(GL_TRIANGLES, 6, GL_UNSIGNED_SHORT, 0);
+        glDrawElements(GL_TRIANGLES, 6, GL_UNSIGNED_SHORT, 0);
 
-        //glBindVertexArray(0);
-        //glUseProgram(0);
+        glBindVertexArray(0);
+        glUseProgram(0);
     }
     break;
 
