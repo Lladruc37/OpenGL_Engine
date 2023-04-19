@@ -113,7 +113,7 @@ struct App
 
     ivec2 displaySize;
 
-    u32 modelIdx;
+    u32 textMeshIdx;
     std::vector<Texture>  textures;
     std::vector<Material> materials;
     std::vector<Mesh> meshes;
