@@ -412,16 +412,9 @@ void Init(App* app)
         glDebugMessageControl(GL_DONT_CARE, GL_DONT_CARE, GL_DONT_CARE, 0, nullptr, GL_TRUE);
     }
 
+
     app->textMeshIdx = LoadModel(app,"Patrick/Patrick.obj");
     app->texturedMeshProgramIdx = LoadProgram(app, "shaders.glsl", /*"SHOW_TEXTURED_MESH"*/"TEXTURED_GEOMETRY");
-
-    app->model = glm::rotate(app->model, glm::radians(-55.0f), glm::vec3(1.0f, 0.0f, 0.0f));
-    app->view = glm::translate(app->view, glm::vec3(0.0f, 0.0f, -30.0f));
-    app->projection = glm::perspective(glm::radians(45.0f), (float)app->displaySize.x /app->displaySize.y, 0.1f, 100.0f);
-    
-    app->modelLoc = glGetUniformLocation(app->programs[app->texturedMeshProgramIdx].handle, "model");
-    app->viewLoc = glGetUniformLocation(app->programs[app->texturedMeshProgramIdx].handle, "view");
-    app->projectionLoc = glGetUniformLocation(app->programs[app->texturedMeshProgramIdx].handle, "projection");
 
     //TextQuad
     //CreateTextureQuad(app);
@@ -434,6 +427,34 @@ void Init(App* app)
     app->blackTexIdx = LoadTexture2D(app, "color_black.png");
     app->normalTexIdx = LoadTexture2D(app, "color_normal.png");
     app->magentaTexIdx = LoadTexture2D(app, "color_magenta.png");
+
+
+
+    //Camera
+    glm::vec3 cameraPos = glm::vec3(0.0f, 0.0f, 5.0f);
+    glm::vec3 cameraTarget = glm::vec3(0.0f, 0.0f, 0.0f);
+    glm::vec3 cameraDirection = glm::normalize(cameraPos - cameraTarget);
+    glm::vec3 cameraFront = glm::vec3(0.0f, 0.0f, -1.0f);
+    glm::vec3 up = glm::vec3(0.0f, 1.0f, 0.0f);
+    glm::vec3 cameraRight = glm::normalize(glm::cross(up, cameraFront));
+    glm::vec3 cameraUp = glm::cross(cameraFront, cameraRight);
+    app->view = glm::lookAt(cameraPos, cameraPos + cameraFront, cameraUp);
+
+    //OLD
+    //app->view = glm::lookAt(glm::vec3(0.0f, 0.0f, 3.0f),
+    //    glm::vec3(0.0f, 0.0f, 0.0f),
+    //    glm::vec3(0.0f, 1.0f, 0.0f));
+
+
+
+    //Coordinate System / MVP Matrices
+    app->model = glm::rotate(app->model, glm::radians(-55.0f), glm::vec3(1.0f, 0.0f, 0.0f));
+    app->projection = glm::perspective(glm::radians(45.0f), (float)app->displaySize.x / app->displaySize.y, 0.1f, 100.0f);
+
+    app->modelLoc = glGetUniformLocation(app->programs[app->texturedMeshProgramIdx].handle, "model");
+    app->viewLoc = glGetUniformLocation(app->programs[app->texturedMeshProgramIdx].handle, "view");
+    app->projectionLoc = glGetUniformLocation(app->programs[app->texturedMeshProgramIdx].handle, "projection");
+
 }
 
 void Gui(App* app)
