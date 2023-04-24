@@ -124,6 +124,18 @@ struct App
     u32 texturedMeshProgramIdx;
     u32 texturedQuadProgramIdx;
     
+    //per model
+    glm::mat4 model = glm::mat4(1.0f);
+
+    //per shader
+    int modelLoc;
+    int viewLoc;
+    int projectionLoc;
+    
+    //per camera
+    glm::mat4 view = glm::mat4(1.0f);
+    glm::mat4 projection;
+
     // texture indices
     u32 diceTexIdx;
     u32 whiteTexIdx;

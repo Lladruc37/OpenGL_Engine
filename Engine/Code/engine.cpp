@@ -398,6 +398,10 @@ void Init(App* app)
         app->info.extensions += "\n";
     }
 
+    glEnable(GL_BLEND);
+    glBlendFunc(GL_SRC_ALPHA,GL_ONE_MINUS_SRC_ALPHA);
+    glEnable(GL_DEPTH_TEST);
+
     //Debugging
     int flags; glGetIntegerv(GL_CONTEXT_FLAGS, &flags);
     if (flags & GL_CONTEXT_FLAG_DEBUG_BIT)
@@ -409,14 +413,20 @@ void Init(App* app)
     }
 
     app->textMeshIdx = LoadModel(app,"Patrick/Patrick.obj");
-
-    //Program initialization
     app->texturedMeshProgramIdx = LoadProgram(app, "shaders.glsl", /*"SHOW_TEXTURED_MESH"*/"TEXTURED_GEOMETRY");
 
-    //TextQuad
-    CreateTextureQuad(app);
+    app->model = glm::rotate(app->model, glm::radians(-55.0f), glm::vec3(1.0f, 0.0f, 0.0f));
+    app->view = glm::translate(app->view, glm::vec3(0.0f, 0.0f, -30.0f));
+    app->projection = glm::perspective(glm::radians(45.0f), (float)app->displaySize.x /app->displaySize.y, 0.1f, 100.0f);
+    
+    app->modelLoc = glGetUniformLocation(app->programs[app->texturedMeshProgramIdx].handle, "model");
+    app->viewLoc = glGetUniformLocation(app->programs[app->texturedMeshProgramIdx].handle, "view");
+    app->projectionLoc = glGetUniformLocation(app->programs[app->texturedMeshProgramIdx].handle, "projection");
 
-    app->texturedQuadProgramIdx = LoadProgram(app, "shaders.glsl", "TEXTURED_QUAD");
+    //TextQuad
+    //CreateTextureQuad(app);
+
+    //app->texturedQuadProgramIdx = LoadProgram(app, "shaders.glsl", "TEXTURED_QUAD");
 
     //Texture initialization
     app->diceTexIdx = LoadTexture2D(app, "dice.png");
@@ -430,18 +440,16 @@ void Gui(App* app)
 {
     ImGui::Begin("Info");
     ImGui::Text("FPS: %f", 1.0f/app->deltaTime);
+    ImGui::Text("\n\n");
+    ImGui::Text("Versions:");
+    ImGui::BulletText(app->info.version.c_str());
+    ImGui::BulletText(app->info.renderer.c_str());
+    ImGui::BulletText(app->info.vendor.c_str());
+    ImGui::BulletText(app->info.GLSLVersion.c_str());
+    ImGui::Text("\n\n");
+    ImGui::Text("Extensions:");
+    ImGui::Text(app->info.extensions.c_str());
     ImGui::End();
-    //TODO: INFO PANEL
-    if (ImGui::BeginMenu("ImGui"))
-    {
-        ImGui::BulletText(app->info.version.c_str());
-        ImGui::BulletText(app->info.renderer.c_str());
-        ImGui::BulletText(app->info.vendor.c_str());
-        ImGui::BulletText(app->info.GLSLVersion.c_str());
-        ImGui::Text("Extensions:");
-        ImGui::Text(app->info.extensions.c_str());
-        ImGui::EndMenu();
-    }
 }
 
 void Update(App* app)
@@ -451,6 +459,10 @@ void Update(App* app)
 
 void Render(App* app)
 {
+    glClearColor(0.1f, 0.1f, 0.1f, 1.0f);
+    glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
+    glViewport(0, 0, app->displaySize.x, app->displaySize.y);
+
     switch (app->mode)
     {
     case Mode_TexturedQuad:
@@ -470,6 +482,10 @@ void Render(App* app)
         glUseProgram(texturedMeshProgram.handle);
         Model& model = app->models[app->textMeshIdx];
         Mesh& mesh = app->meshes[model.meshIdx];
+
+        glUniformMatrix4fv(app->modelLoc, 1, GL_FALSE, glm::value_ptr(app->model));
+        glUniformMatrix4fv(app->viewLoc, 1, GL_FALSE, glm::value_ptr(app->view));
+        glUniformMatrix4fv(app->projectionLoc, 1, GL_FALSE, glm::value_ptr(app->projection));
 
         for (u32 i = 0; i < mesh.submeshes.size(); ++i)
         {
@@ -515,27 +531,23 @@ void Render(App* app)
         //}
 
 
-        glClearColor(0.1f, 0.1f, 0.1f, 1.0f);
-        glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 
-        glViewport(0, 0, app->displaySize.x, app->displaySize.y);
+        //Program& programTextureGeometry = app->programs[app->texturedQuadProgramIdx];
+        //glUseProgram(programTextureGeometry.handle);
+        //glBindVertexArray(app->vao);
 
-        Program& programTextureGeometry = app->programs[app->texturedQuadProgramIdx];
-        glUseProgram(programTextureGeometry.handle);
-        glBindVertexArray(app->vao);
+        //glEnable(GL_BLEND);
+        //glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
 
-        glEnable(GL_BLEND);
-        glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
+        //glUniform1i(app->programUniformTexture, 0);
+        //glActiveTexture(GL_TEXTURE0);
+        //GLuint textureHandle = app->textures[app->diceTexIdx].handle;
+        //glBindTexture(GL_TEXTURE_2D, textureHandle);
 
-        glUniform1i(app->programUniformTexture, 0);
-        glActiveTexture(GL_TEXTURE0);
-        GLuint textureHandle = app->textures[app->diceTexIdx].handle;
-        glBindTexture(GL_TEXTURE_2D, textureHandle);
+        //glDrawElements(GL_TRIANGLES, 6, GL_UNSIGNED_SHORT, 0);
 
-        glDrawElements(GL_TRIANGLES, 6, GL_UNSIGNED_SHORT, 0);
-
-        glBindVertexArray(0);
-        glUseProgram(0);
+        //glBindVertexArray(0);
+        //glUseProgram(0);
     }
     break;
 
