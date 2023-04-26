@@ -177,7 +177,7 @@ u32 LoadModel(App* app, const char* filename)
 										aiProcess_PreTransformVertices  |
 										aiProcess_ImproveCacheLocality  |
 										aiProcess_OptimizeMeshes        |
-										aiProcess_SortByPType);
+										aiProcess_SortByPType); //TODO: AFEGIR FLAG PER TANGENTS
 
 	if (!scene)
 	{

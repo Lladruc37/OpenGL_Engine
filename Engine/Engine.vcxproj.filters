@@ -60,6 +60,9 @@
     <ClCompile Include="Code\TexturedQuad.cpp">
       <Filter>Engine</Filter>
     </ClCompile>
+    <ClCompile Include="Code\Camera.cpp">
+      <Filter>Engine</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="ThirdParty\imgui-docking\imconfig.h">
@@ -114,6 +117,9 @@
       <Filter>Engine</Filter>
     </ClInclude>
     <ClInclude Include="Code\TexturedQuad.h">
+      <Filter>Engine</Filter>
+    </ClInclude>
+    <ClInclude Include="Code\Camera.h">
       <Filter>Engine</Filter>
     </ClInclude>
   </ItemGroup>

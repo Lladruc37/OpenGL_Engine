@@ -431,14 +431,6 @@ void Init(App* app)
 
 
     //Camera
-    glm::vec3 cameraPos = glm::vec3(0.0f, 0.0f, 5.0f);
-    glm::vec3 cameraTarget = glm::vec3(0.0f, 0.0f, 0.0f);
-    glm::vec3 cameraDirection = glm::normalize(cameraPos - cameraTarget);
-    glm::vec3 cameraFront = glm::vec3(0.0f, 0.0f, -1.0f);
-    glm::vec3 up = glm::vec3(0.0f, 1.0f, 0.0f);
-    glm::vec3 cameraRight = glm::normalize(glm::cross(up, cameraFront));
-    glm::vec3 cameraUp = glm::cross(cameraFront, cameraRight);
-    app->view = glm::lookAt(cameraPos, cameraPos + cameraFront, cameraUp);
 
     //OLD
     //app->view = glm::lookAt(glm::vec3(0.0f, 0.0f, 3.0f),
@@ -449,7 +441,7 @@ void Init(App* app)
 
     //Coordinate System / MVP Matrices
     app->model = glm::rotate(app->model, glm::radians(-55.0f), glm::vec3(1.0f, 0.0f, 0.0f));
-    app->projection = glm::perspective(glm::radians(45.0f), (float)app->displaySize.x / app->displaySize.y, 0.1f, 100.0f);
+    app->camera.projection = glm::perspective(glm::radians(45.0f), (float)app->displaySize.x / app->displaySize.y, 0.1f, 100.0f);
 
     app->modelLoc = glGetUniformLocation(app->programs[app->texturedMeshProgramIdx].handle, "model");
     app->viewLoc = glGetUniformLocation(app->programs[app->texturedMeshProgramIdx].handle, "view");
@@ -475,7 +467,23 @@ void Gui(App* app)
 
 void Update(App* app)
 {
-    // You can handle app->input keyboard/mouse here
+    float currentFrame = glfwGetTime();
+    app->deltaTime = currentFrame - app->lastFrame;
+    app->lastFrame = currentFrame;
+
+    if (app->input.keys[K_SHIFT] == BUTTON_PRESSED)
+        app->camera.cameraSpeed = 5.0f * app->deltaTime;
+    else
+        app->camera.cameraSpeed = 2.5f * app->deltaTime;
+
+    if (app->input.keys[K_W] == BUTTON_PRESSED)
+        app->camera.ProcessInput(CameraInput::Forward);
+    if (app->input.keys[K_S] == BUTTON_PRESSED)
+        app->camera.ProcessInput(CameraInput::Back);
+    if (app->input.keys[K_A] == BUTTON_PRESSED)
+        app->camera.ProcessInput(CameraInput::Left);
+    if (app->input.keys[K_D] == BUTTON_PRESSED)
+        app->camera.ProcessInput(CameraInput::Right);
 }
 
 void Render(App* app)
@@ -505,8 +513,8 @@ void Render(App* app)
         Mesh& mesh = app->meshes[model.meshIdx];
 
         glUniformMatrix4fv(app->modelLoc, 1, GL_FALSE, glm::value_ptr(app->model));
-        glUniformMatrix4fv(app->viewLoc, 1, GL_FALSE, glm::value_ptr(app->view));
-        glUniformMatrix4fv(app->projectionLoc, 1, GL_FALSE, glm::value_ptr(app->projection));
+        glUniformMatrix4fv(app->viewLoc, 1, GL_FALSE, glm::value_ptr(app->camera.view));
+        glUniformMatrix4fv(app->projectionLoc, 1, GL_FALSE, glm::value_ptr(app->camera.projection));
 
         for (u32 i = 0; i < mesh.submeshes.size(); ++i)
         {

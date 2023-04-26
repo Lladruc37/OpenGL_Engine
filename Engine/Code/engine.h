@@ -10,6 +10,7 @@
 #include "TexturedQuad.h"
 #include "Debugging.h"
 #include <glad/glad.h>
+#include "Camera.h"
 
 typedef glm::vec2  vec2;
 typedef glm::vec3  vec3;
@@ -101,7 +102,8 @@ enum Mode
 struct App
 {
     // Loop
-    f32  deltaTime;
+    float deltaTime = 0.0f;
+    float lastFrame = 0.0f;
     bool isRunning;
 
     // Input
@@ -132,25 +134,8 @@ struct App
     int viewLoc;
     int projectionLoc;
     
-    //TODO: Add Camera
-    //per camera
-    glm::mat4 view = glm::mat4(1.0f);
-    glm::mat4 projection;
-
-    //void processInput(GLFWwindow* window)
-    //{
-    //    ...
-    //        const float cameraSpeed = 0.05f; // adjust accordingly
-    //    if (glfwGetKey(window, GLFW_KEY_W) == GLFW_PRESS)
-    //        cameraPos += cameraSpeed * cameraFront;
-    //    if (glfwGetKey(window, GLFW_KEY_S) == GLFW_PRESS)
-    //        cameraPos -= cameraSpeed * cameraFront;
-    //    if (glfwGetKey(window, GLFW_KEY_A) == GLFW_PRESS)
-    //        cameraPos -= glm::normalize(glm::cross(cameraFront, cameraUp)) * cameraSpeed;
-    //    if (glfwGetKey(window, GLFW_KEY_D) == GLFW_PRESS)
-    //        cameraPos += glm::normalize(glm::cross(cameraFront, cameraUp)) * cameraSpeed;
-    //}
-
+    //Camera
+    Camera camera;
 
     // texture indices
     u32 diceTexIdx;

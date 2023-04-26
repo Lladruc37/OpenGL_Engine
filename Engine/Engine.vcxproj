@@ -20,6 +20,7 @@
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="Code\assimp_model_loading.cpp" />
+    <ClCompile Include="Code\Camera.cpp" />
     <ClCompile Include="Code\Debugging.cpp" />
     <ClCompile Include="Code\engine.cpp" />
     <ClCompile Include="Code\platform.cpp" />
@@ -37,6 +38,7 @@
   <ItemGroup>
     <ClInclude Include="Code\assimp_model_loading.h" />
     <ClInclude Include="Code\BufferObjects.h" />
+    <ClInclude Include="Code\Camera.h" />
     <ClInclude Include="Code\Debugging.h" />
     <ClInclude Include="Code\engine.h" />
     <ClInclude Include="Code\MeshObjects.h" />

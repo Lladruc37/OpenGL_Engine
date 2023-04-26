@@ -16,6 +16,7 @@
 #endif
 
 #include "engine.h"
+#include "platform.h"
 
 #include <GLFW/glfw3.h>
 #include <stdio.h>
@@ -43,6 +44,9 @@ void OnGlfwMouseMoveEvent(GLFWwindow* window, double xpos, double ypos)
     app->input.mouseDelta.y = ypos - app->input.mousePos.y;
     app->input.mousePos.x = xpos;
     app->input.mousePos.y = ypos;
+
+    if(app->input.mouseButtons[LEFT] == BUTTON_PRESSED)
+        app->camera.ProcessMouseInput(app->input.mouseDelta);
 }
 
 void OnGlfwMouseEvent(GLFWwindow* window, int button, int event, int modifiers)
@@ -87,6 +91,7 @@ void OnGlfwKeyboardEvent(GLFWwindow* window, int key, int scancode, int action, 
         case GLFW_KEY_V: key = K_V; break; case GLFW_KEY_W: key = K_W; break; case GLFW_KEY_X: key = K_X; break;
         case GLFW_KEY_Y: key = K_Y; break; case GLFW_KEY_Z: key = K_Z; break;
         case GLFW_KEY_ESCAPE: key = K_ESCAPE; break;
+        case GLFW_KEY_LEFT_SHIFT: key = K_SHIFT; break;
         case GLFW_KEY_ENTER:  key = K_ENTER; break;
     }
 
