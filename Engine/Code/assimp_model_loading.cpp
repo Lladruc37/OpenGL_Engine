@@ -127,7 +127,6 @@ void ProcessAssimpMesh(const aiScene* scene, aiMesh *mesh, Mesh *myMesh, u32 bas
 	VertexBufferLayout vertexBufferLayout = {};
 	vertexBufferLayout.attributes.push_back( VertexBufferAttribute{ 0, 3, 0 } );
 	vertexBufferLayout.attributes.push_back( VertexBufferAttribute{ 1, 3, 3*sizeof(float) } );
-	//TODO: ADD NORMALS
 	vertexBufferLayout.stride = 6 * sizeof(float);
 	if (hasTexCoords)
 	{

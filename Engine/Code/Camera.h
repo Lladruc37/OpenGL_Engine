@@ -25,7 +25,7 @@ struct Camera
     glm::vec3 cameraFront = glm::vec3(0.0f, 0.0f, -1.0f);
     glm::vec3 cameraRight;
     glm::vec3 cameraUp;
-    float cameraSpeed = 0.05f;
+    float cameraSpeed = 5.0f;
 
     void ProcessInput(CameraInput cameraInput)
     {

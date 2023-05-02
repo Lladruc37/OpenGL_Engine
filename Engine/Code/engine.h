@@ -23,13 +23,13 @@ struct Image
 {
     void* pixels;
     ivec2 size;
-    i32   nchannels;
-    i32   stride;
+    i32   nchannels =0;
+    i32   stride =0;
 };
 
 struct Texture
 {
-    GLuint      handle;
+    GLuint      handle =0;
     std::string filepath;
 };
 
@@ -50,16 +50,16 @@ struct OpenGLInfo
 
 struct Program
 {
-    GLuint             handle;
+    GLuint             handle =0;
     std::string        filepath;
     std::string        programName;
-    u64                lastWriteTimestamp; // What is this for?
+    u64                lastWriteTimestamp =0; // What is this for?
     VertexBufferLayout vertexInputLayout;
 };
 
 struct Model
 {
-    u32 meshIdx;
+    u32 meshIdx = 0;
     std::vector<u32> materialIdx;
 };
 
@@ -68,16 +68,16 @@ struct Submesh
     VertexBufferLayout vertexBufferLayout;
     std::vector<f32> vertices;
     std::vector<u32> indices;
-    u32 vertexOffset;
-    u32 indexOffset;
+    u32 vertexOffset = 0;
+    u32 indexOffset = 0;
     std::vector<VAO> vaos;
 };
 
 struct Mesh
 {
     std::vector<Submesh> submeshes;
-    GLuint vertexBufferHandle;
-    GLuint indexBufferHandle;
+    GLuint vertexBufferHandle = 0;
+    GLuint indexBufferHandle = 0;
 };
 
 struct Material
@@ -85,20 +85,20 @@ struct Material
     std::string name;
     vec3 albedo;
     vec3 emissive;
-    f32 smoothness;
-    u32 albedoTextureIdx;
-    u32 emissiveTextureIdx;
-    u32 specularTextureIdx;
-    u32 normalsTextureIdx;
-    u32 bumpTextureIdx;
+    f32 smoothness =0.0f;
+    u32 albedoTextureIdx =0;
+    u32 emissiveTextureIdx=0;
+    u32 specularTextureIdx = 0;
+    u32 normalsTextureIdx =0;
+    u32 bumpTextureIdx = 0;
 };
 
 struct Entity
 {
     glm::mat4 worldMatrix;
-    u32 modelIdx;
-    u32 localParamsOffset;
-    u32 localParamsSize;
+    u32 modelIdx=0;
+    u32 localParamsOffset=0;
+    u32 localParamsSize=0;
 
     Entity(glm::mat4 worldMat, u32 modelIndex, u32 localOffset = 0, u32 localSize = 0)
     {
