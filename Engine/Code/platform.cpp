@@ -45,8 +45,7 @@ void OnGlfwMouseMoveEvent(GLFWwindow* window, double xpos, double ypos)
     app->input.mousePos.x = xpos;
     app->input.mousePos.y = ypos;
 
-    if(app->input.mouseButtons[LEFT] == BUTTON_PRESSED)
-        app->camera.ProcessMouseInput(app->input.mouseDelta);
+    app->camera.ProcessMouseInput(app->input.mouseDelta);
 }
 
 void OnGlfwMouseEvent(GLFWwindow* window, int button, int event, int modifiers)

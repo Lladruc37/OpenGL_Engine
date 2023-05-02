@@ -13,13 +13,19 @@ layout(location=2) in vec2 aTexCoord;
 
 out vec2 vTexCoord;
 
-uniform mat4 model;
-uniform mat4 view;
-uniform mat4 projection;
+layout(binding = 1, std140) uniform LocalParams
+{
+	mat4 model;
+	mat4 MVP;
+};
+
+//uniform mat4 model;
+//uniform mat4 view;
+//uniform mat4 projection;
 
 void main()
 {
-	gl_Position = projection * view * model * vec4(aPosition, 1.0);
+	gl_Position = MVP * vec4(aPosition, 1.0);
 	vTexCoord = aTexCoord;
 }
 

@@ -93,6 +93,22 @@ struct Material
     u32 bumpTextureIdx;
 };
 
+struct Entity
+{
+    glm::mat4 worldMatrix;
+    u32 modelIdx;
+    u32 localParamsOffset;
+    u32 localParamsSize;
+
+    Entity(glm::mat4 worldMat, u32 modelIndex, u32 localOffset = 0, u32 localSize = 0)
+    {
+        worldMatrix = worldMat;
+        modelIdx = modelIndex;
+        localParamsOffset = localOffset;
+        localParamsSize = localSize;
+    }
+};
+
 enum Mode
 {
     Mode_TexturedQuad,
@@ -115,7 +131,8 @@ struct App
 
     ivec2 displaySize;
 
-    u32 textMeshIdx;
+    u32 patrickModelId;
+    u32 planeModelId;
     std::vector<Texture>  textures;
     std::vector<Material> materials;
     std::vector<Mesh> meshes;
@@ -126,13 +143,18 @@ struct App
     u32 texturedMeshProgramIdx;
     u32 texturedQuadProgramIdx;
     
-    //per model
-    glm::mat4 model = glm::mat4(1.0f);
-
     //per shader
-    int modelLoc;
-    int viewLoc;
-    int projectionLoc;
+    //int modelLoc;
+    //int viewLoc;
+    //int projectionLoc;
+
+    //entities
+    std::vector<Entity> entities;
+
+    //uniform
+    int maxUniformBufferSize;
+    int uniformBlockAlignment;
+    GLuint bufferHandle;
     
     //Camera
     Camera camera;

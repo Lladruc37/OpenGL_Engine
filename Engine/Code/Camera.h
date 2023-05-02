@@ -29,19 +29,6 @@ struct Camera
 
     void ProcessInput(CameraInput cameraInput)
     {
-        cameraDirection = glm::normalize(cameraPos - cameraTarget);
-
-        glm::vec3 rotatedDirection;
-        rotatedDirection.x = cos(glm::radians(yaw)) * cos(glm::radians(pitch));
-        rotatedDirection.y = sin(glm::radians(pitch));
-        rotatedDirection.z = sin(glm::radians(yaw)) * cos(glm::radians(pitch));
-        cameraFront = glm::normalize(rotatedDirection);
-
-        glm::vec3 up = glm::vec3(0.0f, 1.0f, 0.0f);
-        cameraRight = glm::normalize(glm::cross(up, cameraFront));
-        cameraUp = glm::cross(cameraFront, cameraRight);
-        view = glm::lookAt(cameraPos, cameraPos + cameraFront, cameraUp);
-
         switch (cameraInput)
         {
         case Forward:
@@ -57,6 +44,22 @@ struct Camera
             cameraPos -= glm::normalize(glm::cross(cameraFront, cameraUp)) * cameraSpeed;
             break;
         }
+    }
+
+    void UpdateCamera()
+    {
+        cameraDirection = glm::normalize(cameraPos - cameraTarget);
+
+        glm::vec3 rotatedDirection;
+        rotatedDirection.x = cos(glm::radians(yaw)) * cos(glm::radians(pitch));
+        rotatedDirection.y = sin(glm::radians(pitch));
+        rotatedDirection.z = sin(glm::radians(yaw)) * cos(glm::radians(pitch));
+        cameraFront = glm::normalize(rotatedDirection);
+
+        glm::vec3 up = glm::vec3(0.0f, 1.0f, 0.0f);
+        cameraRight = glm::normalize(glm::cross(up, cameraFront));
+        cameraUp = glm::cross(cameraFront, cameraRight);
+        view = glm::lookAt(cameraPos, cameraPos + cameraFront, cameraUp);
     }
 
     void ProcessMouseInput(glm::vec2 delta)

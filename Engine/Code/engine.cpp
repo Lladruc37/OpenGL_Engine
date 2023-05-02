@@ -11,6 +11,13 @@
 #include <stb_image_write.h>
 #include <iostream>
 
+#define BINDING(b) b
+
+u32 Align(u32 value, u32 alignment)
+{
+    return (value + alignment - 1) & ~(alignment - 1);
+}
+
 GLuint CreateProgramFromSource(String programSource, const char* shaderName)
 {
     GLchar  infoLogBuffer[1024] = {};
@@ -236,6 +243,22 @@ void CreateTextureQuad(App* app)
     Mesh& mesh = app->meshes.back();
     u32 meshIdx = (u32)app->meshes.size() - 1u;
 
+    app->models.push_back(Model{});
+    Model& model = app->models.back();
+    model.meshIdx = meshIdx;
+    u32 modelIdx = (u32)app->models.size() - 1u;
+    app->planeModelId = modelIdx;
+
+    app->materials.push_back(Material{});
+    Material& myMaterial = app->materials.back();
+
+    myMaterial.name = "plane";
+    myMaterial.albedo = vec3(1.0f);
+    myMaterial.emissive = vec3(0.0f);
+    myMaterial.smoothness = 0.005f / 256.0f;
+    myMaterial.albedoTextureIdx = LoadTexture2D(app, "color_white.png");
+    model.materialIdx.push_back(app->materials.size()-1u);
+
     mesh.submeshes.push_back(Submesh{});
     Submesh& submesh = mesh.submeshes.back();
     u32 submeshIdx = (u32)mesh.submeshes.size() - 1u;
@@ -279,6 +302,8 @@ void CreateTextureQuad(App* app)
     glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, app->embeddedElements);
     glBindVertexArray(0);
 
+    submesh.vaos.push_back(VAO{app->vao,app->programs[app->texturedMeshProgramIdx].handle });
+
     //Create the vertex format
     VertexBufferLayout vertexBufferLayout = {};
     vertexBufferLayout.attributes.push_back(VertexBufferAttribute{ 0, 3, 0 });
@@ -286,23 +311,7 @@ void CreateTextureQuad(App* app)
     vertexBufferLayout.attributes.push_back(VertexBufferAttribute{ 1, 2, vertexBufferLayout.stride });
     vertexBufferLayout.stride += 2 * sizeof(float);
     submesh.vertexBufferLayout = vertexBufferLayout;
-
-    u32 verticesSize = submesh.vertices.size() * sizeof(float);
-    u32 indicesSize = submesh.indices.size() * sizeof(u32);
-
-    //Generate buffers
-    glGenBuffers(1, &mesh.vertexBufferHandle);
-    glBindBuffer(GL_ARRAY_BUFFER, mesh.vertexBufferHandle);
-    glBufferData(GL_ARRAY_BUFFER, verticesSize, NULL, GL_STATIC_DRAW);
-
-    glGenBuffers(1, &mesh.indexBufferHandle);
-    glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, mesh.indexBufferHandle);
-    glBufferData(GL_ELEMENT_ARRAY_BUFFER, indicesSize, NULL, GL_STATIC_DRAW);
-
-    glBufferSubData(GL_ARRAY_BUFFER, 0, verticesSize, submesh.vertices.data());
     submesh.vertexOffset = 0;
-
-    glBufferSubData(GL_ELEMENT_ARRAY_BUFFER, 0, indicesSize, submesh.indices.data());
     submesh.indexOffset = 0;
 
     glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, 0);
@@ -413,13 +422,17 @@ void Init(App* app)
     }
 
 
-    app->textMeshIdx = LoadModel(app,"Patrick/Patrick.obj");
+    app->patrickModelId = LoadModel(app,"Patrick/Patrick.obj");
     app->texturedMeshProgramIdx = LoadProgram(app, "shaders.glsl", /*"SHOW_TEXTURED_MESH"*/"TEXTURED_GEOMETRY");
 
     //TextQuad
-    //CreateTextureQuad(app);
+    CreateTextureQuad(app);
 
     //app->texturedQuadProgramIdx = LoadProgram(app, "shaders.glsl", "TEXTURED_QUAD");
+
+    Entity plane(glm::mat4(1.0f), app->planeModelId);
+    plane.worldMatrix = glm::translate(plane.worldMatrix, vec3(4.0f));
+    app->entities.push_back(plane);
 
     //Texture initialization
     app->diceTexIdx = LoadTexture2D(app, "dice.png");
@@ -440,12 +453,27 @@ void Init(App* app)
 
 
     //Coordinate System / MVP Matrices
-    app->model = glm::rotate(app->model, glm::radians(-55.0f), glm::vec3(1.0f, 0.0f, 0.0f));
     app->camera.projection = glm::perspective(glm::radians(45.0f), (float)app->displaySize.x / app->displaySize.y, 0.1f, 100.0f);
 
-    app->modelLoc = glGetUniformLocation(app->programs[app->texturedMeshProgramIdx].handle, "model");
-    app->viewLoc = glGetUniformLocation(app->programs[app->texturedMeshProgramIdx].handle, "view");
-    app->projectionLoc = glGetUniformLocation(app->programs[app->texturedMeshProgramIdx].handle, "projection");
+    glGetIntegerv(GL_MAX_UNIFORM_BLOCK_SIZE, &app->maxUniformBufferSize);
+    glGetIntegerv(GL_UNIFORM_BUFFER_OFFSET_ALIGNMENT, &app->uniformBlockAlignment);
+
+    glGenBuffers(1, &app->bufferHandle);
+    glBindBuffer(GL_UNIFORM_BUFFER, app->bufferHandle);
+    glBufferData(GL_UNIFORM_BUFFER, app->maxUniformBufferSize, NULL, GL_STREAM_DRAW);
+    glBindBuffer(GL_UNIFORM_BUFFER, 0);
+
+    Entity p1(glm::mat4(1.0f), app->patrickModelId);
+    p1.worldMatrix = glm::translate(p1.worldMatrix, vec3(0.0f));
+    app->entities.push_back(p1);
+    Entity p2(glm::mat4(1.0f), app->patrickModelId);
+    p2.worldMatrix = glm::translate(p2.worldMatrix, vec3(10.0f, 5.0f, 0.0f));
+    p2.worldMatrix = glm::rotate(p2.worldMatrix, glm::radians(60.0f), glm::vec3(0.0f, 1.0f, 0.0f));
+    app->entities.push_back(p2);
+
+    //app->modelLoc = glGetUniformLocation(app->programs[app->texturedMeshProgramIdx].handle, "model");
+    //app->viewLoc = glGetUniformLocation(app->programs[app->texturedMeshProgramIdx].handle, "view");
+    //app->projectionLoc = glGetUniformLocation(app->programs[app->texturedMeshProgramIdx].handle, "projection");
 
 }
 
@@ -484,6 +512,29 @@ void Update(App* app)
         app->camera.ProcessInput(CameraInput::Left);
     if (app->input.keys[K_D] == BUTTON_PRESSED)
         app->camera.ProcessInput(CameraInput::Right);
+    app->camera.UpdateCamera();
+
+    glBindBuffer(GL_UNIFORM_BUFFER, app->bufferHandle);
+    u8* bufferData = (u8*)glMapBuffer(GL_UNIFORM_BUFFER, GL_WRITE_ONLY);
+    u32 bufferHead = 0;
+
+    for (int i = 0; i < app->entities.size(); ++i)
+    {
+        bufferHead = Align(bufferHead, app->uniformBlockAlignment);
+        int offset = bufferHead;
+        app->entities[i].localParamsOffset = offset;
+
+        memcpy(bufferData + bufferHead, glm::value_ptr(app->entities[i].worldMatrix), sizeof(glm::mat4));
+        bufferHead += sizeof(glm::mat4);
+
+        memcpy(bufferData + bufferHead, glm::value_ptr(app->camera.projection * app->camera.view * app->entities[i].worldMatrix), sizeof(glm::mat4));
+        bufferHead += sizeof(glm::mat4);
+
+        app->entities[i].localParamsSize = bufferHead - offset;
+    }
+
+    glUnmapBuffer(GL_UNIFORM_BUFFER);
+    glBindBuffer(GL_UNIFORM_BUFFER, 0);
 }
 
 void Render(App* app)
@@ -506,30 +557,34 @@ void Render(App* app)
         // - bind the vao
         // - glDrawElements() !!!
 
-
-        Program& texturedMeshProgram = app->programs[app->texturedMeshProgramIdx];
-        glUseProgram(texturedMeshProgram.handle);
-        Model& model = app->models[app->textMeshIdx];
-        Mesh& mesh = app->meshes[model.meshIdx];
-
-        glUniformMatrix4fv(app->modelLoc, 1, GL_FALSE, glm::value_ptr(app->model));
-        glUniformMatrix4fv(app->viewLoc, 1, GL_FALSE, glm::value_ptr(app->camera.view));
-        glUniformMatrix4fv(app->projectionLoc, 1, GL_FALSE, glm::value_ptr(app->camera.projection));
-
-        for (u32 i = 0; i < mesh.submeshes.size(); ++i)
+        for (int i = 0; i < app->entities.size(); ++i)
         {
-            GLuint VAO = FindVAO(mesh, i, texturedMeshProgram);
-            glBindVertexArray(VAO);
+            glBindBufferRange(GL_UNIFORM_BUFFER, BINDING(1), app->bufferHandle, app->entities[i].localParamsOffset, app->entities[i].localParamsSize);
 
-            u32 submeshMaterialIdx = model.materialIdx[i];
-            Material& submeshMaterial = app->materials[submeshMaterialIdx];
+            Program& texturedMeshProgram = app->programs[app->texturedMeshProgramIdx];
+            glUseProgram(texturedMeshProgram.handle);
+            Model& model = app->models[app->entities[i].modelIdx];
+            Mesh& mesh = app->meshes[model.meshIdx];
 
-            glActiveTexture(GL_TEXTURE0);
-            glBindTexture(GL_TEXTURE_2D, app->textures[submeshMaterial.albedoTextureIdx].handle);
-            glUniform1i(app->programUniformTexture, 0);
+            //glUniformMatrix4fv(app->modelLoc, 1, GL_FALSE, glm::value_ptr(app->model));
+            //glUniformMatrix4fv(app->viewLoc, 1, GL_FALSE, glm::value_ptr(app->camera.view));
+            //glUniformMatrix4fv(app->projectionLoc, 1, GL_FALSE, glm::value_ptr(app->camera.projection));
 
-            Submesh& submesh = mesh.submeshes[i];
-            glDrawElements(GL_TRIANGLES, submesh.indices.size(), GL_UNSIGNED_INT, (void*)(u64)submesh.indexOffset);
+            for (u32 i = 0; i < mesh.submeshes.size(); ++i)
+            {
+                GLuint VAO = FindVAO(mesh, i, texturedMeshProgram);
+                glBindVertexArray(VAO);
+
+                u32 submeshMaterialIdx = model.materialIdx[i];
+                Material& submeshMaterial = app->materials[submeshMaterialIdx];
+
+                glActiveTexture(GL_TEXTURE0);
+                glBindTexture(GL_TEXTURE_2D, app->textures[submeshMaterial.albedoTextureIdx].handle);
+                glUniform1i(app->programUniformTexture, 0);
+
+                Submesh& submesh = mesh.submeshes[i];
+                glDrawElements(GL_TRIANGLES, submesh.indices.size(), GL_UNSIGNED_INT, (void*)(u64)submesh.indexOffset);
+            }
         }
 
         //Textured Quad
