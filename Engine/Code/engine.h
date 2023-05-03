@@ -8,6 +8,7 @@
 #include "BufferObjects.h"
 #include "assimp_model_loading.h"
 #include "TexturedQuad.h"
+#include "buffer_management.h"
 #include "Debugging.h"
 #include <glad/glad.h>
 #include "Camera.h"
@@ -109,6 +110,37 @@ struct Entity
     }
 };
 
+enum LightType
+{
+    Directional_Light,
+    Point_Light,
+};
+
+struct Light
+{
+    LightType type;
+    vec3 color;
+    vec3 direction;
+    vec3 position;
+
+    Light(LightType t, vec3 col, vec3 dir, vec3 pos)
+    {
+        type = t;
+        color = col;
+        direction = dir;
+        position = pos;
+    }
+};
+
+struct Buffer
+{
+    GLuint handle;
+    GLenum type;
+    GLint size = 0;
+    GLint head = 0;
+    void* data; //mapped data
+};
+
 enum Mode
 {
     Mode_TexturedQuad,
@@ -142,20 +174,22 @@ struct App
     // program indices
     u32 texturedMeshProgramIdx;
     u32 texturedQuadProgramIdx;
-    
-    //per shader
-    //int modelLoc;
-    //int viewLoc;
-    //int projectionLoc;
+
+    //Global Params
+    u32 globalParamsOffset;
+    u32 globalParamsSize;
+
+    //Uniform
+    Buffer cbuffer;
+    int maxUniformBufferSize;
+    int uniformBufferAlignment;
+
+    //Lights
+    std::vector<Light> lights;
 
     //entities
     std::vector<Entity> entities;
 
-    //uniform
-    int maxUniformBufferSize;
-    int uniformBlockAlignment;
-    GLuint bufferHandle;
-    
     //Camera
     Camera camera;
 
