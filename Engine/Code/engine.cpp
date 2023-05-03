@@ -427,9 +427,9 @@ void Init(App* app)
     app->entities.push_back(plane);
 
     //Lights
-    Light l1(LightType::Point_Light, vec3(1.0f), vec3(0.0f), vec3(2.0f));
-    app->lights.push_back(l1);
-    Light l2(LightType::Point_Light, vec3(1.0f,0.0f,0.0f), vec3(0.0f), vec3(-2.0f));
+    //Light l1(LightType::Point_Light, vec3(1.0f), vec3(0.0f), vec3(2.0f));
+    //app->lights.push_back(l1);
+    Light l2(LightType::Directional_Light, vec3(1.0f), vec3(1.0f), vec3(2.0f,0.0f,1.0f));
     app->lights.push_back(l2);
 
     //Texture initialization

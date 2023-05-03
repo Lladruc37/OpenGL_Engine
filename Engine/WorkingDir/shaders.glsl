@@ -11,14 +11,6 @@ struct Light
 	vec3 position;
 };
 
-#if defined(VERTEX) ///////////////////////////////////////////////////
-
-layout(location=0) in vec3 aPosition;
-layout(location=1) in vec3 aNormal;
-layout(location=2) in vec2 aTexCoord;
-//layout(location=3) in vec3 aTangent;
-//layout(location=4) om vec3 aBitangent;
-
 layout(binding = 0,std140) uniform GlobalParams
 {
 	vec3 uCameraPosition;
@@ -26,6 +18,13 @@ layout(binding = 0,std140) uniform GlobalParams
 	Light uLight[16];
 };
 
+#if defined(VERTEX) ///////////////////////////////////////////////////
+
+layout(location=0) in vec3 aPosition;
+layout(location=1) in vec3 aNormal;
+layout(location=2) in vec2 aTexCoord;
+//layout(location=3) in vec3 aTangent;
+//layout(location=4) om vec3 aBitangent;
 
 layout(binding = 1, std140) uniform LocalParams
 {
@@ -42,8 +41,8 @@ void main()
 {
 	vTexCoord = aTexCoord;
 	vPosition = vec3(model * vec4(aPosition,1.0));
-	vNormal = vec3(model * vec4(aNormal,0.0));
-	vViewDir = uCameraPosition - vPosition;
+	vNormal = mat3(transpose(inverse(model))) * aNormal;
+	vViewDir = normalize(uCameraPosition - vPosition);
 	gl_Position = MVP * vec4(aPosition, 1.0);
 }
 
@@ -56,33 +55,45 @@ in vec3 vViewDir; //in world space
 
 uniform sampler2D uTexture;
 
-layout(binding = 0,std140) uniform GlobalParams
-{
-	vec3 uCameraPosition;
-	unsigned int uLightCount;
-	Light uLight[16];
-};
-
 layout(location=0) out vec4 oColor;
 
 void main()
 {
-	vec3 lightColor = vec3(0.0);
-	for(int i = 0; i < 16;++i)
+	oColor = texture(uTexture,vTexCoord);
+	vec3 objColor = oColor.xyz;
+	float ambientStrength = 0.1;
+	float specularStrength = 0.5;
+	vec3 norm = normalize(vNormal);
+
+	vec3 result = vec3(0.0);
+	for(int i = 0; i < uLightCount;++i)
 	{
-	//TODO: FINISH LIGHTS
 		Light light = uLight[i];
 		if(light.type == 0) //directional light
 		{
+			vec3 lightDir = normalize(light.position - vPosition);
+			vec3 reflectDir = reflect(-lightDir, norm); 
 
+			vec3 ambient = ambientStrength * light.color;
+
+			float diff = max(dot(norm, lightDir), 0.0);
+			vec3 diffuse = diff * light.color;
+
+			float spec = pow(max(dot(vViewDir, reflectDir), 0.0), 32);
+			vec3 specular = specularStrength * spec * light.color;
+
+			result += (ambient + diffuse + specular) * objColor;
 		}
 		else //point light
 		{
-			lightColor += light.color;
+			//TODO: FINISH POINT LIGHTS
+			float diffuseCoeff = dot(light.direction,vNormal);
+			vec3 diffuse = max(diffuseCoeff,0.) * light.color;
+
+			result += diffuse;
 		}
 	}
-	oColor = texture(uTexture,vTexCoord);
-	oColor += vec4(lightColor,1.0);
+	oColor = vec4(result,1.0);
 }
 
 #endif

@@ -112,7 +112,7 @@ struct Entity
 
 enum LightType
 {
-    Directional_Light,
+    Directional_Light = 0,
     Point_Light,
 };
 
