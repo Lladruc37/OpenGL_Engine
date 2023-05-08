@@ -6,11 +6,12 @@
 struct Light
 {
 	unsigned int type;
+	vec3 position;
+	vec3 direction;
 	vec3 ambient;
 	vec3 diffuse;
 	vec3 specular;
-	vec3 direction;
-	vec3 position;
+	float constant;
 };
 
 layout(binding = 0,std140) uniform GlobalParams
@@ -57,53 +58,49 @@ in vec3 vViewDir; //in world space
 
 struct Material
 {
-	vec3 ambient;
-	vec3 diffuse;
+	sampler2D diffuse;
 	vec3 specular;
 	float shininess;
 };
 
 uniform Material material;
-uniform sampler2D uTexture;
 
 layout(location=0) out vec4 oColor;
 
 void main()
 {
-	oColor = texture(uTexture,vTexCoord);
-	vec3 objColor = oColor.xyz;
-	//float ambientStrength = 0.1;
-	//float specularStrength = 0.5;
 	vec3 norm = normalize(vNormal);
-
 	vec3 result = vec3(0.0);
+
 	for(int i = 0; i < uLightCount;++i)
 	{
 		Light light = uLight[i];
+		vec3 lightDir = vec3(0.0);
+		vec3 reflectDir = reflect(-lightDir, norm);
+		float attenuation = 1.0;
+
 		if(light.type == 0) //directional light
 		{
-			//TODO: FINISH DIRECTIONAL LIGHTS
-			//float diffuseCoeff = dot(light.direction,vNormal);
-			//vec3 diffuse = max(diffuseCoeff,0.) * light.color;
-
-			//result += diffuse;
+			lightDir = normalize(-light.direction);
 		}
 		else //point light
 		{
-			vec3 lightDir = normalize(light.position - vPosition);
-			vec3 reflectDir = reflect(-lightDir, norm);
+			lightDir = normalize(light.position - vPosition);
+			float linear = 0.09;
+			float quadratic = 0.032;
 			//-----------
-
-			vec3 ambient = light.ambient * material.ambient;
-
-			float diff = max(dot(norm, lightDir), 0.0);
-			vec3 diffuse = light.diffuse * (diff * objColor /*material.diffuse*/);
-
-			float spec = pow(max(dot(vViewDir, reflectDir), 0.0), /*material.shininess*/32);
-			vec3 specular = light.specular * (spec * material.specular);
-
-			result += ambient + diffuse + specular;
+			float dist = length(light.position - vPosition);
+			attenuation = 1.0/(light.constant + linear * dist + quadratic * (dist * dist));
 		}
+		vec3 ambient = light.ambient * vec3(texture(material.diffuse, vTexCoord));
+
+		float diff = max(dot(norm, lightDir), 0.0);
+		vec3 diffuse = light.diffuse * diff * vec3(texture(material.diffuse,vTexCoord));
+
+		float spec = pow(max(dot(vViewDir, reflectDir), 0.0), /*material.shininess*/32);
+		vec3 specular = light.specular * spec * material.specular;
+
+		result += (ambient + diffuse + specular) * attenuation;
 	}
 	oColor = vec4(result,1.0);
 }

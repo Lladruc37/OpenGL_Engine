@@ -146,25 +146,28 @@ enum LightType
 {
     Directional_Light = 0,
     Point_Light,
+    //Spotlight
 };
 
 struct Light
 {
     LightType type;
+    vec3 position;
+    vec3 direction;
     vec3 ambient;
     vec3 diffuse;
     vec3 specular;
-    vec3 direction;
-    vec3 position;
+    float constant;
 
-    Light(LightType t, vec3 amb,vec3 diff,vec3 spec, vec3 dir, vec3 pos)
+    Light(LightType t, vec3 pos, vec3 dir, vec3 amb, vec3 diff, vec3 spec, float cons = 1.0f)
     {
         type = t;
+        position = pos;
+        direction = dir;
         ambient = amb;
         diffuse = diff;
         specular = spec;
-        direction = dir;
-        position = pos;
+        constant = cons;
     }
 };
 
