@@ -86,12 +86,44 @@ struct Material
     std::string name;
     vec3 albedo;
     vec3 emissive;
+    vec3 specular;
     f32 smoothness =0.0f;
     u32 albedoTextureIdx =0;
     u32 emissiveTextureIdx=0;
     u32 specularTextureIdx = 0;
     u32 normalsTextureIdx =0;
     u32 bumpTextureIdx = 0;
+
+    Material()
+    {
+        name = "";
+        albedo = vec3(0.0f);
+        emissive = vec3(0.0f);
+        specular = vec3(0.0f);
+    }
+
+    Material(std::string _name,
+        vec3 _albedo,
+        vec3 _emissive,
+        vec3 _specular,
+        f32 _smoothness = 0.0f,
+        u32 _albedoTextureIdx = 0,
+        u32 _emissiveTextureIdx = 0,
+        u32 _specularTextureIdx = 0,
+        u32 _normalsTextureIdx = 0,
+        u32 _bumpTextureIdx = 0)
+    {
+        name = _name;
+        albedo = _albedo;
+        emissive = _emissive;
+        specular = _specular;
+        smoothness = _smoothness;
+        albedoTextureIdx = _albedoTextureIdx;
+        emissiveTextureIdx = _emissiveTextureIdx;
+        specularTextureIdx = _specularTextureIdx;
+        normalsTextureIdx = _normalsTextureIdx;
+        bumpTextureIdx = _bumpTextureIdx;
+    }
 };
 
 struct Entity
@@ -119,14 +151,18 @@ enum LightType
 struct Light
 {
     LightType type;
-    vec3 color;
+    vec3 ambient;
+    vec3 diffuse;
+    vec3 specular;
     vec3 direction;
     vec3 position;
 
-    Light(LightType t, vec3 col, vec3 dir, vec3 pos)
+    Light(LightType t, vec3 amb,vec3 diff,vec3 spec, vec3 dir, vec3 pos)
     {
         type = t;
-        color = col;
+        ambient = amb;
+        diffuse = diff;
+        specular = spec;
         direction = dir;
         position = pos;
     }
@@ -229,6 +265,8 @@ void Render(App* app);
 GLuint FindVAO(Mesh& mesh, u32 submeshIndex, const Program& program);
 
 u32 LoadTexture2D(App* app, const char* filepath);
+
+void CreateTextureQuad(App* app, Material myMaterial);
 
 GLuint CreateTexture2DFromImage(Image image);
 

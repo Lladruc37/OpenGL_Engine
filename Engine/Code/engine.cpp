@@ -221,7 +221,7 @@ u32 LoadTexture2D(App* app, const char* filepath)
     }
 }
 
-void CreateTextureQuad(App* app)
+void CreateTextureQuad(App* app, Material myMaterial)
 {
     const u32 indices[] = {
     0,1,2,
@@ -235,14 +235,6 @@ void CreateTextureQuad(App* app)
     0.5f, 0.5f, 0.0f, 0.0f, 0.0f, 1.0f, 1.0f, 1.0f, //top right
     -0.5f, 0.5f, 0.0f, 0.0f, 0.0f, 1.0f, 0.0f, 1.0f, //top left
     };
-
-    Material myMaterial;
-    myMaterial.name = "plane";
-    myMaterial.albedo = vec3(1.0f);
-    myMaterial.emissive = vec3(0.0f);
-    myMaterial.smoothness = 0.005f / 256.0f;
-    myMaterial.albedoTextureIdx = LoadTexture2D(app, "color_white.png");
-
 
     Submesh submesh;
     for (int i = 0; i < 6; ++i)
@@ -405,22 +397,32 @@ void Init(App* app)
         glDebugMessageControl(GL_DONT_CARE, GL_DONT_CARE, GL_DONT_CARE, 0, nullptr, GL_TRUE);
     }
 
+    //Texture initialization
+    app->diceTexIdx = LoadTexture2D(app, "dice.png");
+    app->whiteTexIdx = LoadTexture2D(app, "color_white.png");
+    app->blackTexIdx = LoadTexture2D(app, "color_black.png");
+    app->normalTexIdx = LoadTexture2D(app, "color_normal.png");
+    app->magentaTexIdx = LoadTexture2D(app, "color_magenta.png");
 
-    app->patrickModelId = LoadModel(app,"Patrick/Patrick.obj");
+    //Materials
+    Material planeMat = Material("plane_mat", vec3(1.0f), vec3(0.0f),vec3(0.5f), 0.005f / 256.0f, app->diceTexIdx);
+
+    //Patrick
+    app->patrickModelId = LoadModel(app, "Patrick/Patrick.obj");
     app->texturedMeshProgramIdx = LoadProgram(app, "shaders.glsl", /*"SHOW_TEXTURED_MESH"*/"TEXTURED_GEOMETRY");
 
+    //TextQuad
+    CreateTextureQuad(app, planeMat);
+    //app->texturedQuadProgramIdx = LoadProgram(app, "shaders.glsl", "TEXTURED_QUAD");
+
+    //Entities
     Entity p1(glm::mat4(1.0f), app->patrickModelId);
-    p1.worldMatrix = glm::translate(p1.worldMatrix, vec3(0.0f));
+    p1.worldMatrix = glm::translate(p1.worldMatrix, vec3(1.0f, 0.0f, 0.0f));
     app->entities.push_back(p1);
     Entity p2(glm::mat4(1.0f), app->patrickModelId);
     p2.worldMatrix = glm::translate(p2.worldMatrix, vec3(10.0f, 5.0f, 0.0f));
-    p2.worldMatrix = glm::rotate(p2.worldMatrix, glm::radians(60.0f), glm::vec3(0.0f, 1.0f, 0.0f));
+    p2.worldMatrix = glm::rotate(p2.worldMatrix, glm::radians(-60.0f), glm::vec3(0.0f, 1.0f, 0.0f));
     app->entities.push_back(p2);
-
-    //TextQuad
-    CreateTextureQuad(app);
-
-    //app->texturedQuadProgramIdx = LoadProgram(app, "shaders.glsl", "TEXTURED_QUAD");
 
     Entity plane(glm::mat4(1.0f), app->planeModelId);
     plane.worldMatrix = glm::translate(plane.worldMatrix, vec3(4.0f));
@@ -429,15 +431,8 @@ void Init(App* app)
     //Lights
     //Light l1(LightType::Point_Light, vec3(1.0f), vec3(0.0f), vec3(2.0f));
     //app->lights.push_back(l1);
-    Light l2(LightType::Directional_Light, vec3(1.0f), vec3(1.0f), vec3(2.0f,0.0f,1.0f));
+    Light l2(LightType::Point_Light, vec3(0.1f), vec3(0.5f), vec3(1.0f), vec3(1.0f), vec3(2.0f, 0.0f, 1.0f));
     app->lights.push_back(l2);
-
-    //Texture initialization
-    app->diceTexIdx = LoadTexture2D(app, "dice.png");
-    app->whiteTexIdx = LoadTexture2D(app, "color_white.png");
-    app->blackTexIdx = LoadTexture2D(app, "color_black.png");
-    app->normalTexIdx = LoadTexture2D(app, "color_normal.png");
-    app->magentaTexIdx = LoadTexture2D(app, "color_magenta.png");
 
     //Coordinate System / MVP Matrices
     app->camera.projection = glm::perspective(glm::radians(45.0f), (float)app->displaySize.x / app->displaySize.y, 0.1f, 100.0f);
@@ -502,7 +497,9 @@ void Update(App* app)
         AlignHead(app->cbuffer, sizeof(vec4));
         Light& light = app->lights[i];
         PushUInt(app->cbuffer, light.type);
-        PushVec3(app->cbuffer, light.color);
+        PushVec3(app->cbuffer, light.ambient);
+        PushVec3(app->cbuffer, light.diffuse);
+        PushVec3(app->cbuffer, light.specular);
         PushVec3(app->cbuffer, light.direction);
         PushVec3(app->cbuffer, light.position);
     }
@@ -570,6 +567,11 @@ void Render(App* app)
                 glActiveTexture(GL_TEXTURE0);
                 glBindTexture(GL_TEXTURE_2D, app->textures[submeshMaterial.albedoTextureIdx].handle);
                 glUniform1i(app->programUniformTexture, 0);
+
+                glUniform3fv(glGetUniformLocation(texturedMeshProgram.handle, "material.ambient"), 1, glm::value_ptr(submeshMaterial.albedo));
+                glUniform3fv(glGetUniformLocation(texturedMeshProgram.handle, "material.diffuse"), 1, glm::value_ptr(submeshMaterial.emissive));
+                glUniform3fv(glGetUniformLocation(texturedMeshProgram.handle, "material.specular"), 1, glm::value_ptr(submeshMaterial.specular));
+                glUniform1f(glGetUniformLocation(texturedMeshProgram.handle, "material.shininess"), submeshMaterial.smoothness);
 
                 Submesh& submesh = mesh.submeshes[i];
                 glDrawElements(GL_TRIANGLES, submesh.indices.size(), GL_UNSIGNED_INT, (void*)(u64)submesh.indexOffset);

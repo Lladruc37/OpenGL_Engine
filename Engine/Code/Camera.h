@@ -64,8 +64,8 @@ struct Camera
 
     void ProcessMouseInput(glm::vec2 delta)
     {
-        yaw += delta.x*0.5;
-        pitch -= delta.y*0.5;
+        yaw += delta.x*0.25;
+        pitch -= delta.y*0.25;
 
         if (pitch > 89.0f)
             pitch = 89.0f;

@@ -22,6 +22,7 @@ void ProcessAssimpMaterial(App* app, aiMaterial* material, Material& myMaterial,
 	myMaterial.name = name.C_Str();
 	myMaterial.albedo = vec3(diffuseColor.r, diffuseColor.g, diffuseColor.b);
 	myMaterial.emissive = vec3(emissiveColor.r, emissiveColor.g, emissiveColor.b);
+	myMaterial.specular = vec3(specularColor.r, specularColor.g, specularColor.b);
 	myMaterial.smoothness = shininess / 256.0f;
 
 	aiString aiFilename;
