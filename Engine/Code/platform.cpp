@@ -173,6 +173,7 @@ int main()
     //io.ConfigFlags |= ImGuiConfigFlags_NavEnableGamepad;      // Enable Gamepad Controls
     io.ConfigFlags |= ImGuiConfigFlags_DockingEnable;           // Enable Docking
     io.ConfigFlags |= ImGuiConfigFlags_ViewportsEnable;         // Enable Multi-Viewport / Platform Windows
+    io.ConfigFlags |= ImGuiConfigFlags_NavEnableSetMousePos;
     //io.ConfigViewportsNoAutoMerge = true;
     //io.ConfigViewportsNoTaskBarIcon = true;
 
@@ -194,7 +195,7 @@ int main()
         return -1;
     }
 
-    if (!ImGui_ImplOpenGL3_Init())
+    if (!ImGui_ImplOpenGL3_Init("#version 430"))
     {
         ELOG("Failed to initialize ImGui OpenGL wrapper\n");
         return -1;

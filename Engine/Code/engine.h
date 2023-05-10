@@ -241,6 +241,7 @@ struct App
 
     //Info
     OpenGLInfo info;
+    bool isInfo = false;
 
     //Frame buffer object
     GLuint framebufferHandle;

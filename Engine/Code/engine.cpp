@@ -395,72 +395,72 @@ void Init(App* app)
         glDebugMessageControl(GL_DONT_CARE, GL_DONT_CARE, GL_DONT_CARE, 0, nullptr, GL_TRUE);
     }
 
-    //Frame buffer object
-    glGenFramebuffers(1, &app->framebufferHandle);
-    glBindFramebuffer(GL_FRAMEBUFFER, app->framebufferHandle);
+    ////Frame buffer object
+    //glGenFramebuffers(1, &app->framebufferHandle);
+    //glBindFramebuffer(GL_FRAMEBUFFER, app->framebufferHandle);
 
-    glGenTextures(1, &app->colorAttachmentHandle);
-    glBindTexture(GL_TEXTURE_2D, app->colorAttachmentHandle);
-    glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA8/*GL_RGB*/, app->displaySize.x, app->displaySize.y, 0, GL_RGBA/*GL_RGB*/, GL_UNSIGNED_BYTE, NULL);
-    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_NEAREST/*GL_LINEAR*/);
-    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST/*GL_LINEAR*/);
-    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_R, GL_CLAMP_TO_EDGE);
-    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE);
-    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE);
-    glBindTexture(GL_TEXTURE_2D, 0);
-    glFramebufferTexture(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0, app->colorAttachmentHandle, 0);
+    //glGenTextures(1, &app->colorAttachmentHandle);
+    //glBindTexture(GL_TEXTURE_2D, app->colorAttachmentHandle);
+    //glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA8/*GL_RGB*/, app->displaySize.x, app->displaySize.y, 0, GL_RGBA/*GL_RGB*/, GL_UNSIGNED_BYTE, NULL);
+    //glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_NEAREST/*GL_LINEAR*/);
+    //glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST/*GL_LINEAR*/);
+    //glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_R, GL_CLAMP_TO_EDGE);
+    //glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE);
+    //glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE);
+    //glBindTexture(GL_TEXTURE_2D, 0);
+    //glFramebufferTexture(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0, app->colorAttachmentHandle, 0);
 
-    GLuint depthAttachmentHandle;
-    glGenTextures(1, &depthAttachmentHandle);
-    glBindTexture(GL_TEXTURE_2D, depthAttachmentHandle);
-    glTexImage2D(GL_TEXTURE_2D, 0, GL_DEPTH_COMPONENT24, app->displaySize.x, app->displaySize.y, 0, GL_DEPTH_COMPONENT, GL_FLOAT, NULL);
-    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_NEAREST/*GL_LINEAR*/);
-    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST/*GL_LINEAR*/);
-    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_R, GL_CLAMP_TO_EDGE);
-    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE);
-    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE);
-    glBindTexture(GL_TEXTURE_2D, 0);
-    glFramebufferTexture(GL_FRAMEBUFFER, GL_DEPTH_ATTACHMENT, depthAttachmentHandle, 0);
+    //GLuint depthAttachmentHandle;
+    //glGenTextures(1, &depthAttachmentHandle);
+    //glBindTexture(GL_TEXTURE_2D, depthAttachmentHandle);
+    //glTexImage2D(GL_TEXTURE_2D, 0, GL_DEPTH_COMPONENT24, app->displaySize.x, app->displaySize.y, 0, GL_DEPTH_COMPONENT, GL_FLOAT, NULL);
+    //glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_NEAREST/*GL_LINEAR*/);
+    //glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST/*GL_LINEAR*/);
+    //glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_R, GL_CLAMP_TO_EDGE);
+    //glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE);
+    //glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE);
+    //glBindTexture(GL_TEXTURE_2D, 0);
+    //glFramebufferTexture(GL_FRAMEBUFFER, GL_DEPTH_ATTACHMENT, depthAttachmentHandle, 0);
 
-    GLenum framebufferStatus = glCheckFramebufferStatus(GL_FRAMEBUFFER);
-    if (framebufferStatus != GL_FRAMEBUFFER_COMPLETE)
-    {
-        //Something went wrong
-        switch (framebufferStatus)
-        {
-        case GL_FRAMEBUFFER_UNDEFINED:
-            ELOG("GL_FRAMEBUFFER_UNDEFINED");
-            break;
-        case GL_FRAMEBUFFER_INCOMPLETE_ATTACHMENT:
-            ELOG("GL_FRAMEBUFFER_INCOMPLETE_ATTACHMENT");
-            break;
-        case GL_FRAMEBUFFER_INCOMPLETE_MISSING_ATTACHMENT:
-            ELOG("GL_FRAMEBUFFER_INCOMPLETE_MISSING_ATTACHMENT");
-            break;
-        case GL_FRAMEBUFFER_INCOMPLETE_DRAW_BUFFER:
-            ELOG("GL_FRAMEBUFFER_INCOMPLETE_DRAW_BUFFER");
-            break;
-        case GL_FRAMEBUFFER_INCOMPLETE_READ_BUFFER:
-            ELOG("GL_FRAMEBUFFER_INCOMPLETE_READ_BUFFER");
-            break;
-        case GL_FRAMEBUFFER_UNSUPPORTED:
-            ELOG("GL_FRAMEBUFFER_UNSUPPORTED");
-            break;
-        case GL_FRAMEBUFFER_INCOMPLETE_MULTISAMPLE:
-            ELOG("GL_FRAMEBUFFER_INCOMPLETE_MULTISAMPLE");
-            break;
-        case GL_FRAMEBUFFER_INCOMPLETE_LAYER_TARGETS:
-            ELOG("GL_FRAMEBUFFER_INCOMPLETE_LAYER_TARGETS");
-            break;
-        default:
-            ELOG("Unkown framebuffer status error");
-            break;
-        }
-    }
+    //GLenum framebufferStatus = glCheckFramebufferStatus(GL_FRAMEBUFFER);
+    //if (framebufferStatus != GL_FRAMEBUFFER_COMPLETE)
+    //{
+    //    //Something went wrong
+    //    switch (framebufferStatus)
+    //    {
+    //    case GL_FRAMEBUFFER_UNDEFINED:
+    //        ELOG("GL_FRAMEBUFFER_UNDEFINED");
+    //        break;
+    //    case GL_FRAMEBUFFER_INCOMPLETE_ATTACHMENT:
+    //        ELOG("GL_FRAMEBUFFER_INCOMPLETE_ATTACHMENT");
+    //        break;
+    //    case GL_FRAMEBUFFER_INCOMPLETE_MISSING_ATTACHMENT:
+    //        ELOG("GL_FRAMEBUFFER_INCOMPLETE_MISSING_ATTACHMENT");
+    //        break;
+    //    case GL_FRAMEBUFFER_INCOMPLETE_DRAW_BUFFER:
+    //        ELOG("GL_FRAMEBUFFER_INCOMPLETE_DRAW_BUFFER");
+    //        break;
+    //    case GL_FRAMEBUFFER_INCOMPLETE_READ_BUFFER:
+    //        ELOG("GL_FRAMEBUFFER_INCOMPLETE_READ_BUFFER");
+    //        break;
+    //    case GL_FRAMEBUFFER_UNSUPPORTED:
+    //        ELOG("GL_FRAMEBUFFER_UNSUPPORTED");
+    //        break;
+    //    case GL_FRAMEBUFFER_INCOMPLETE_MULTISAMPLE:
+    //        ELOG("GL_FRAMEBUFFER_INCOMPLETE_MULTISAMPLE");
+    //        break;
+    //    case GL_FRAMEBUFFER_INCOMPLETE_LAYER_TARGETS:
+    //        ELOG("GL_FRAMEBUFFER_INCOMPLETE_LAYER_TARGETS");
+    //        break;
+    //    default:
+    //        ELOG("Unkown framebuffer status error");
+    //        break;
+    //    }
+    //}
 
-    //glDrawBuffers(1, &app->colorAttachmentHandle);
-    glBindFramebuffer(GL_FRAMEBUFFER, 0);
-    //glDeleteFramebuffers(1, &app->framebufferHandle);
+    ////glDrawBuffers(1, &app->colorAttachmentHandle);
+    //glBindFramebuffer(GL_FRAMEBUFFER, 0);
+    ////glDeleteFramebuffers(1, &app->framebufferHandle);
 
     //Texture initialization
     app->diceTexIdx = LoadTexture2D(app, "dice.png");
@@ -521,18 +521,55 @@ void Init(App* app)
 
 void Gui(App* app)
 {
-    ImGui::Begin("Info");
-    ImGui::Text("FPS: %f", 1.0f/app->deltaTime);
-    ImGui::Text("\n\n");
-    ImGui::Text("Versions:");
-    ImGui::BulletText(app->info.version.c_str());
-    ImGui::BulletText(app->info.renderer.c_str());
-    ImGui::BulletText(app->info.vendor.c_str());
-    ImGui::BulletText(app->info.GLSLVersion.c_str());
-    ImGui::Text("\n\n");
-    ImGui::Text("Extensions:");
-    ImGui::Text(app->info.extensions.c_str());
+    ImGuiWindowFlags windowFlags = ImGuiWindowFlags_NoDocking;
+    ImGuiViewport* viewport = ImGui::GetMainViewport();
+    ImGui::SetNextWindowViewport(viewport->ID);
+    ImGui::PushStyleVar(ImGuiStyleVar_WindowRounding, 0.0f);
+    ImGui::PushStyleVar(ImGuiStyleVar_WindowBorderSize, 0.0f);
+    ImGui::PushStyleVar(ImGuiStyleVar_WindowPadding, ImVec2(0.0f, 0.0f));
+    windowFlags |= ImGuiWindowFlags_NoBackground;
+    windowFlags |= ImGuiWindowFlags_NoTitleBar | ImGuiWindowFlags_NoCollapse | ImGuiWindowFlags_NoResize | ImGuiWindowFlags_NoMove;
+    windowFlags |= ImGuiWindowFlags_NoBringToFrontOnFocus | ImGuiWindowFlags_NoNavFocus;
+    //ImGui::DockSpaceOverViewport();
+
+    if (ImGui::Begin("Dockspace", 0, windowFlags))
+    {
+        // DockSpace
+        ImGuiIO& io = ImGui::GetIO();
+        if (io.ConfigFlags & ImGuiConfigFlags_DockingEnable)
+        {
+            ImGuiID dockspaceId = ImGui::GetID("DefaultDockspace");
+            ImGui::DockSpace(dockspaceId, ImVec2(0.0f, 0.0f), ImGuiDockNodeFlags_PassthruCentralNode);
+        }
+    }
     ImGui::End();
+    ImGui::PopStyleVar(3);
+    if (ImGui::BeginMainMenuBar())
+    {
+        if (ImGui::BeginMenu("Engine"))
+        {
+            ImGui::Checkbox("Info", &app->isInfo);
+            ImGui::EndMenu();
+        }
+        ImGui::EndMainMenuBar();
+    }
+
+
+    if (app->isInfo)
+    {
+        ImGui::Begin("Info");
+        ImGui::Text("FPS: %f", 1.0f / app->deltaTime);
+        ImGui::Text("\n\n");
+        ImGui::Text("Versions:");
+        ImGui::BulletText(app->info.version.c_str());
+        ImGui::BulletText(app->info.renderer.c_str());
+        ImGui::BulletText(app->info.vendor.c_str());
+        ImGui::BulletText(app->info.GLSLVersion.c_str());
+        ImGui::Text("\n\n");
+        ImGui::Text("Extensions:");
+        ImGui::Text(app->info.extensions.c_str());
+        ImGui::End();
+    }
 }
 
 void Update(App* app)
@@ -600,8 +637,8 @@ void Render(App* app)
 {
     //Frame buffer object
     glBindFramebuffer(GL_FRAMEBUFFER, app->framebufferHandle);
-    GLuint drawBuffers[] = { app->colorAttachmentHandle };
-    glDrawBuffers(ARRAY_COUNT(drawBuffers), drawBuffers);
+    //GLuint drawBuffers[] = { app->colorAttachmentHandle };
+    //glDrawBuffers(ARRAY_COUNT(drawBuffers), drawBuffers);
 
     glClearColor(0.1f, 0.1f, 0.1f, 1.0f);
     glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
