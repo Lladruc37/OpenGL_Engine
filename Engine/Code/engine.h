@@ -242,6 +242,10 @@ struct App
     //Info
     OpenGLInfo info;
 
+    //Frame buffer object
+    GLuint framebufferHandle;
+    GLuint colorAttachmentHandle;
+
     // Mode
     Mode mode;
 
