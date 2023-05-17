@@ -274,7 +274,9 @@ GLuint FindVAO(Mesh& mesh, u32 submeshIndex, const Program& program);
 
 u32 LoadTexture2D(App* app, const char* filepath);
 
-void CreateTextureQuad(App* app, Material myMaterial);
+u32 CreateTextureQuad(App* app);
+
+void CreateTextureQuadGeometry(App* app, Material myMaterial);
 
 GLuint CreateTexture2DFromImage(Image image);
 
