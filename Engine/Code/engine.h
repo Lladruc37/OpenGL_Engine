@@ -245,7 +245,11 @@ struct App
 
     //Frame buffer object
     GLuint framebufferHandle;
-    GLuint colorAttachmentHandle;
+    GLuint positionAttachmentHandle;
+    GLuint normalAttachmentHandle;
+    GLuint albedoAttachmentHandle;
+    GLuint specularAttachmentHandle;
+    GLuint depthAttachmentHandle;
 
     // Mode
     Mode mode;
@@ -257,6 +261,10 @@ struct App
 
     // Location of the texture uniform in the textured quad shader
     GLuint programUniformTexture;
+    GLuint programUniformLightingPosition;
+    GLuint programUniformLightingNormal;
+    GLuint programUniformLightingAlbedo;
+    GLuint programUniformLightingSpec;
 
     // VAO object to link our screen filling quad with our textured quad shader
     GLuint vao;

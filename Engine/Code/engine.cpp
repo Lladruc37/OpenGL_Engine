@@ -264,7 +264,7 @@ void CreateTextureQuadGeometry(App* app, Material myMaterial)
     0,2,3
     };
 
-    //pos, uv
+    //pos, normal, uv
     const f32 vertices[] = {
     -0.5f, -0.5f, 0.0f, 0.0f, 0.0f, 1.0f, 0.0f, 0.0f, //bottom right
     0.5f, -0.5f, 0.0f, 0.0f, 0.0f, 1.0f, 1.0f, 0.0f, //bottom left
@@ -437,30 +437,61 @@ void Init(App* app)
     glGenFramebuffers(1, &app->framebufferHandle);
     glBindFramebuffer(GL_FRAMEBUFFER, app->framebufferHandle);
 
-    glGenTextures(1, &app->colorAttachmentHandle);
-    glBindTexture(GL_TEXTURE_2D, app->colorAttachmentHandle);
-    glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA8/*GL_RGB*/, app->displaySize.x, app->displaySize.y, 0, GL_RGBA/*GL_RGB*/, GL_UNSIGNED_BYTE, NULL);
-    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_NEAREST/*GL_LINEAR*/);
-    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST/*GL_LINEAR*/);
-    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_R, GL_CLAMP_TO_EDGE);
-    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE);
-    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE);
-    glBindTexture(GL_TEXTURE_2D, 0);
-    glFramebufferTexture(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0, app->colorAttachmentHandle, 0);
+    // color buffer
+    //glGenTextures(1, &app->colorAttachmentHandle);
+    //glBindTexture(GL_TEXTURE_2D, app->colorAttachmentHandle);
+    //glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA8/*GL_RGB*/, app->displaySize.x, app->displaySize.y, 0, GL_RGBA/*GL_RGB*/, GL_UNSIGNED_BYTE, NULL);
+    //glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_NEAREST/*GL_LINEAR*/);
+    //glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST/*GL_LINEAR*/);
+    //glBindTexture(GL_TEXTURE_2D, 0);
+    //glFramebufferTexture(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0, app->colorAttachmentHandle, 0);
 
-    GLuint depthAttachmentHandle;
-    glGenTextures(1, &depthAttachmentHandle);
-    glBindTexture(GL_TEXTURE_2D, depthAttachmentHandle);
+    // position color buffer
+    glGenTextures(1, &app->positionAttachmentHandle);
+    glBindTexture(GL_TEXTURE_2D, app->positionAttachmentHandle);
+    glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA8/*GL_RGB*/, app->displaySize.x, app->displaySize.y, 0, GL_RGBA/*GL_RGB*/, GL_UNSIGNED_BYTE, NULL);
+    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_NEAREST);
+    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
+    glBindTexture(GL_TEXTURE_2D, 0);
+    glFramebufferTexture(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0, app->positionAttachmentHandle, 0);
+
+    // normal color buffer
+    glGenTextures(1, &app->normalAttachmentHandle);
+    glBindTexture(GL_TEXTURE_2D, app->normalAttachmentHandle);
+    glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA8/*GL_RGB*/, app->displaySize.x, app->displaySize.y, 0, GL_RGBA/*GL_RGB*/, GL_UNSIGNED_BYTE, NULL);
+    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_NEAREST);
+    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
+    glBindTexture(GL_TEXTURE_2D, 0);
+    glFramebufferTexture(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT1, app->normalAttachmentHandle, 0);
+
+    // albedo color buffer
+    glGenTextures(1, &app->albedoAttachmentHandle);
+    glBindTexture(GL_TEXTURE_2D, app->albedoAttachmentHandle);
+    glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA8/*GL_RGB*/, app->displaySize.x, app->displaySize.y, 0, GL_RGBA/*GL_RGB*/, GL_UNSIGNED_BYTE, NULL);
+    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_NEAREST);
+    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
+    glBindTexture(GL_TEXTURE_2D, 0);
+    glFramebufferTexture(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT2, app->albedoAttachmentHandle, 0);
+
+    // specular color buffer
+    glGenTextures(1, &app->specularAttachmentHandle);
+    glBindTexture(GL_TEXTURE_2D, app->specularAttachmentHandle);
+    glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA8/*GL_RGB*/, app->displaySize.x, app->displaySize.y, 0, GL_RGBA/*GL_RGB*/, GL_UNSIGNED_BYTE, NULL);
+    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_NEAREST);
+    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
+    glBindTexture(GL_TEXTURE_2D, 0);
+    glFramebufferTexture(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT3, app->specularAttachmentHandle, 0);
+
+    // depth buffer
+    glGenTextures(1, &app->depthAttachmentHandle);
+    glBindTexture(GL_TEXTURE_2D, app->depthAttachmentHandle);
     glTexImage2D(GL_TEXTURE_2D, 0, GL_DEPTH_COMPONENT24, app->displaySize.x, app->displaySize.y, 0, GL_DEPTH_COMPONENT, GL_FLOAT, NULL);
     glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_NEAREST/*GL_LINEAR*/);
     glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST/*GL_LINEAR*/);
-    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_R, GL_CLAMP_TO_EDGE);
-    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE);
-    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE);
     glBindTexture(GL_TEXTURE_2D, 0);
-    glFramebufferTexture(GL_FRAMEBUFFER, GL_DEPTH_ATTACHMENT, depthAttachmentHandle, 0);
+    glFramebufferTexture(GL_FRAMEBUFFER, GL_DEPTH_ATTACHMENT, app->depthAttachmentHandle, 0);
 
-    GLuint drawBuffers[] = { GL_COLOR_ATTACHMENT0 };
+    GLuint drawBuffers[] = { GL_COLOR_ATTACHMENT0,GL_COLOR_ATTACHMENT1,GL_COLOR_ATTACHMENT2,GL_COLOR_ATTACHMENT3 };
     glDrawBuffers(ARRAY_COUNT(drawBuffers), drawBuffers);
 
     GLenum framebufferStatus = glCheckFramebufferStatus(GL_FRAMEBUFFER);
@@ -515,7 +546,7 @@ void Init(App* app)
 
     //Patrick
     app->patrickModelId = LoadModel(app, "Patrick/Patrick.obj");
-    app->texturedMeshProgramIdx = LoadProgram(app, "shaders.glsl", /*"SHOW_TEXTURED_MESH"*/"TEXTURED_GEOMETRY");
+    app->texturedMeshProgramIdx = LoadProgram(app, "shaders.glsl", "GEOMETRY_PASS");
     app->programUniformTexture = glGetUniformLocation(app->programs[app->texturedMeshProgramIdx].handle, "material.diffuse");
 
     //TextQuadGeometry
@@ -523,7 +554,11 @@ void Init(App* app)
 
     //TextQuad
     app->vao = CreateTextureQuad(app);
-    app->texturedQuadProgramIdx = LoadProgram(app, "shaders.glsl", "TEXTURED_QUAD");
+    app->texturedQuadProgramIdx = LoadProgram(app, "shaders.glsl", "LIGHTING_PASS");
+    app->programUniformLightingPosition = glGetUniformLocation(app->programs[app->texturedQuadProgramIdx].handle, "gPosition");
+    app->programUniformLightingNormal = glGetUniformLocation(app->programs[app->texturedQuadProgramIdx].handle, "gNormal");
+    app->programUniformLightingAlbedo = glGetUniformLocation(app->programs[app->texturedQuadProgramIdx].handle, "gAlbedo");
+    app->programUniformLightingSpec = glGetUniformLocation(app->programs[app->texturedQuadProgramIdx].handle, "gSpec");
 
     //Entities
     Entity p1(glm::mat4(1.0f), app->patrickModelId);
@@ -684,7 +719,7 @@ void Render(App* app)
     glBindFramebuffer(GL_FRAMEBUFFER, app->framebufferHandle);
 
     glEnable(GL_DEPTH_TEST);
-    glClearColor(0.1f, 0.1f, 0.1f, 1.0f);
+    glClearColor(0.0f, 0.0f, 0.0f, 1.0f);
     glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
     glViewport(0, 0, app->displaySize.x, app->displaySize.y);
 
@@ -793,12 +828,27 @@ void Render(App* app)
     //Render framebuffer on screen
     glBindFramebuffer(GL_FRAMEBUFFER, 0);
     glDisable(GL_DEPTH_TEST);
-    glClearColor(0.1f, 0.1f, 0.1f, 1.0f);
+    glClearColor(0.0f, 0.0f, 0.0f, 1.0f);
     glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
     glUseProgram(app->programs[app->texturedQuadProgramIdx].handle);
     glBindVertexArray(app->vao);
+
     glActiveTexture(GL_TEXTURE0);
-    glBindTexture(GL_TEXTURE_2D, app->colorAttachmentHandle);
+    glBindTexture(GL_TEXTURE_2D, app->positionAttachmentHandle);
+    glUniform1i(app->programUniformLightingPosition, 0);
+
+    glActiveTexture(GL_TEXTURE1);
+    glBindTexture(GL_TEXTURE_2D, app->normalAttachmentHandle);
+    glUniform1i(app->programUniformLightingNormal, 1);
+
+    glActiveTexture(GL_TEXTURE2);
+    glBindTexture(GL_TEXTURE_2D, app->albedoAttachmentHandle);
+    glUniform1i(app->programUniformLightingAlbedo, 2);
+
+    glActiveTexture(GL_TEXTURE3);
+    glBindTexture(GL_TEXTURE_2D, app->specularAttachmentHandle);
+    glUniform1i(app->programUniformLightingSpec, 3);
+
     glDrawElements(GL_TRIANGLES, 6, GL_UNSIGNED_INT, (void*)0);
 }
 
