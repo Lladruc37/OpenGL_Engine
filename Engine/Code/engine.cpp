@@ -541,6 +541,62 @@ void Init(App* app)
     glBindFramebuffer(GL_FRAMEBUFFER, 0);
     //glDeleteFramebuffers(1, &app->framebufferHandle);
 
+    //Frame buffer object post processing
+    glGenFramebuffers(1, &app->framebufferPostProcessingHandle);
+    glBindFramebuffer(GL_FRAMEBUFFER, app->framebufferPostProcessingHandle);
+
+    // position color buffer
+    glGenTextures(1, &app->finalColorAttachmentHandle);
+    glBindTexture(GL_TEXTURE_2D, app->finalColorAttachmentHandle);
+    glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA8/*GL_RGB*/, app->displaySize.x, app->displaySize.y, 0, GL_RGBA/*GL_RGB*/, GL_UNSIGNED_BYTE, NULL);
+    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_NEAREST);
+    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
+    glBindTexture(GL_TEXTURE_2D, 0);
+    glFramebufferTexture(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0, app->finalColorAttachmentHandle, 0);
+
+    glDrawBuffer(GL_COLOR_ATTACHMENT0);
+
+    framebufferStatus = glCheckFramebufferStatus(GL_FRAMEBUFFER);
+    if (framebufferStatus != GL_FRAMEBUFFER_COMPLETE)
+    {
+        //Something went wrong
+        switch (framebufferStatus)
+        {
+        case GL_FRAMEBUFFER_UNDEFINED:
+            ELOG("GL_FRAMEBUFFER_UNDEFINED");
+            break;
+        case GL_FRAMEBUFFER_INCOMPLETE_ATTACHMENT:
+            ELOG("GL_FRAMEBUFFER_INCOMPLETE_ATTACHMENT");
+            break;
+        case GL_FRAMEBUFFER_INCOMPLETE_MISSING_ATTACHMENT:
+            ELOG("GL_FRAMEBUFFER_INCOMPLETE_MISSING_ATTACHMENT");
+            break;
+        case GL_FRAMEBUFFER_INCOMPLETE_DRAW_BUFFER:
+            ELOG("GL_FRAMEBUFFER_INCOMPLETE_DRAW_BUFFER");
+            break;
+        case GL_FRAMEBUFFER_INCOMPLETE_READ_BUFFER:
+            ELOG("GL_FRAMEBUFFER_INCOMPLETE_READ_BUFFER");
+            break;
+        case GL_FRAMEBUFFER_UNSUPPORTED:
+            ELOG("GL_FRAMEBUFFER_UNSUPPORTED");
+            break;
+        case GL_FRAMEBUFFER_INCOMPLETE_MULTISAMPLE:
+            ELOG("GL_FRAMEBUFFER_INCOMPLETE_MULTISAMPLE");
+            break;
+        case GL_FRAMEBUFFER_INCOMPLETE_LAYER_TARGETS:
+            ELOG("GL_FRAMEBUFFER_INCOMPLETE_LAYER_TARGETS");
+            break;
+        default:
+            ELOG("Unkown framebuffer status error");
+            break;
+        }
+    }
+
+    //glDrawBuffers(1, &app->colorAttachmentHandle);
+    glBindFramebuffer(GL_FRAMEBUFFER, 0);
+    //glDeleteFramebuffers(1, &app->framebufferHandle);
+
+
     //Texture initialization
     app->diceTexIdx = LoadTexture2D(app, "dice.png");
     app->whiteTexIdx = LoadTexture2D(app, "color_white.png");
@@ -567,6 +623,8 @@ void Init(App* app)
     app->programUniformLightingNormal = glGetUniformLocation(app->programs[app->texturedQuadProgramIdx].handle, "gNormal");
     app->programUniformLightingAlbedo = glGetUniformLocation(app->programs[app->texturedQuadProgramIdx].handle, "gAlbedo");
     app->programUniformLightingSpec = glGetUniformLocation(app->programs[app->texturedQuadProgramIdx].handle, "gSpec");
+    app->postProcessingProgramIdx = LoadProgram(app, "shaders.glsl", "POST_PROCESSING_PASS");
+    app->programUniformPostProcessing = glGetUniformLocation(app->programs[app->postProcessingProgramIdx].handle, "finalImage");
 
     //Entities
     Entity p1(glm::mat4(1.0f), app->patrickModelId);
@@ -848,7 +906,7 @@ void Render(App* app)
     default:;
     }
     //Render framebuffer on screen
-    glBindFramebuffer(GL_FRAMEBUFFER, 0);
+    glBindFramebuffer(GL_FRAMEBUFFER, app->framebufferPostProcessingHandle);
     glDisable(GL_DEPTH_TEST);
     glClearColor(0.0f, 0.0f, 0.0f, 1.0f);
     glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
@@ -872,6 +930,19 @@ void Render(App* app)
     glActiveTexture(GL_TEXTURE3);
     glBindTexture(GL_TEXTURE_2D, app->specularAttachmentHandle);
     glUniform1i(app->programUniformLightingSpec, 3);
+
+    glDrawElements(GL_TRIANGLES, 6, GL_UNSIGNED_INT, (void*)0);
+
+    //Post processing pass
+    glBindFramebuffer(GL_FRAMEBUFFER, 0);
+    glClearColor(0.0f, 0.0f, 0.0f, 1.0f);
+    glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
+    glUseProgram(app->programs[app->texturedQuadProgramIdx].handle);
+    glBindVertexArray(app->vao);
+
+    glActiveTexture(GL_TEXTURE0);
+    glBindTexture(GL_TEXTURE_2D, app->finalColorAttachmentHandle);
+    glUniform1i(app->programUniformPostProcessing, 0);
 
     glDrawElements(GL_TRIANGLES, 6, GL_UNSIGNED_INT, (void*)0);
 }

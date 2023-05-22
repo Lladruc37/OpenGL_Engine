@@ -213,6 +213,7 @@ struct App
     // program indices
     u32 texturedMeshProgramIdx;
     u32 texturedQuadProgramIdx;
+    u32 postProcessingProgramIdx;
 
     //Global Params
     u32 globalParamsOffset;
@@ -245,11 +246,19 @@ struct App
 
     //Frame buffer object
     GLuint framebufferHandle;
+
+    //Attachments
     GLuint positionAttachmentHandle;
     GLuint normalAttachmentHandle;
     GLuint albedoAttachmentHandle;
     GLuint specularAttachmentHandle;
     GLuint depthAttachmentHandle;
+
+    //Post processing
+    GLuint framebufferPostProcessingHandle;
+
+    //Attachments
+    GLuint finalColorAttachmentHandle;
 
     // Mode
     Mode mode;
@@ -269,6 +278,7 @@ struct App
     GLuint programUniformLightingNormal;
     GLuint programUniformLightingAlbedo;
     GLuint programUniformLightingSpec;
+    GLuint programUniformPostProcessing;
 
     // VAO object to link our screen filling quad with our textured quad shader
     GLuint vao;
