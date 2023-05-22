@@ -99,6 +99,7 @@ void main()
 #elif defined(FRAGMENT) ///////////////////////////////////////////////
 
 in vec2 vTexCoord;
+uniform int renderTarget;
 uniform sampler2D gPosition;
 uniform sampler2D gNormal;
 uniform sampler2D gAlbedo;
@@ -109,9 +110,9 @@ layout(location=0) out vec4 gColor;
 void main()
 {
 	vec3 fragPos = texture(gPosition,vTexCoord).rgb;
-	vec3 normal = normalize(texture(gNormal,vTexCoord).rgb);
+	vec3 normal = texture(gNormal,vTexCoord).rgb;
 	vec3 albedo = texture(gAlbedo, vTexCoord).rgb;
-	vec3 specularTex = texture(gSpec,vTexCoord).rgb;
+	float specularTex = texture(gSpec,vTexCoord).r;
 
 	vec3 lighting = vec3(0.0);//albedo * 0.1;
 	vec3 viewDir = normalize(uCameraPosition - fragPos);
@@ -146,7 +147,35 @@ void main()
 		lighting += (ambient + diffuse + specular) * attenuation;
 	}
 
-	gColor = vec4(lighting,1.0);
+	
+	switch(renderTarget)
+	{
+		case 0: //final
+		{
+			gColor = vec4(lighting,1.0);
+			break;
+		}
+		case 1: //position
+		{
+			gColor = vec4(fragPos,1.0);
+			break;
+		}
+		case 2: //normal
+		{
+			gColor = vec4(normal,1.0);
+			break;
+		}
+		case 3: //albedo
+		{
+			gColor = vec4(albedo,1.0);
+			break;
+		}
+		case 4: //spec
+		{
+			gColor = vec4(vec3(specularTex),1.0);
+			break;
+		}
+	}
 }
 
 #endif

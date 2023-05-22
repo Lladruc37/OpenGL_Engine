@@ -261,6 +261,10 @@ struct App
 
     // Location of the texture uniform in the textured quad shader
     GLuint programUniformTexture;
+
+    std::vector<std::string> renderTargets;
+    int currentRenderTarget;
+    GLuint programUniformRenderTarget;
     GLuint programUniformLightingPosition;
     GLuint programUniformLightingNormal;
     GLuint programUniformLightingAlbedo;

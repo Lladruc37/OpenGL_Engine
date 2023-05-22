@@ -433,6 +433,13 @@ void Init(App* app)
         glDebugMessageControl(GL_DONT_CARE, GL_DONT_CARE, GL_DONT_CARE, 0, nullptr, GL_TRUE);
     }
 
+    app->renderTargets.push_back("final color");
+    app->renderTargets.push_back("position color");
+    app->renderTargets.push_back("normal color");
+    app->renderTargets.push_back("albedo color");
+    app->renderTargets.push_back("spec color");
+    app->currentRenderTarget = 0;
+
     //Frame buffer object
     glGenFramebuffers(1, &app->framebufferHandle);
     glBindFramebuffer(GL_FRAMEBUFFER, app->framebufferHandle);
@@ -449,7 +456,7 @@ void Init(App* app)
     // position color buffer
     glGenTextures(1, &app->positionAttachmentHandle);
     glBindTexture(GL_TEXTURE_2D, app->positionAttachmentHandle);
-    glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA8/*GL_RGB*/, app->displaySize.x, app->displaySize.y, 0, GL_RGBA/*GL_RGB*/, GL_UNSIGNED_BYTE, NULL);
+    glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA16F/*GL_RGB*/, app->displaySize.x, app->displaySize.y, 0, GL_RGBA/*GL_RGB*/, GL_FLOAT, NULL);
     glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_NEAREST);
     glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
     glBindTexture(GL_TEXTURE_2D, 0);
@@ -458,7 +465,7 @@ void Init(App* app)
     // normal color buffer
     glGenTextures(1, &app->normalAttachmentHandle);
     glBindTexture(GL_TEXTURE_2D, app->normalAttachmentHandle);
-    glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA8/*GL_RGB*/, app->displaySize.x, app->displaySize.y, 0, GL_RGBA/*GL_RGB*/, GL_UNSIGNED_BYTE, NULL);
+    glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA16F/*GL_RGB*/, app->displaySize.x, app->displaySize.y, 0, GL_RGBA/*GL_RGB*/, GL_FLOAT, NULL);
     glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_NEAREST);
     glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
     glBindTexture(GL_TEXTURE_2D, 0);
@@ -555,6 +562,7 @@ void Init(App* app)
     //TextQuad
     app->vao = CreateTextureQuad(app);
     app->texturedQuadProgramIdx = LoadProgram(app, "shaders.glsl", "LIGHTING_PASS");
+    app->programUniformRenderTarget = glGetUniformLocation(app->programs[app->texturedQuadProgramIdx].handle, "renderTarget");
     app->programUniformLightingPosition = glGetUniformLocation(app->programs[app->texturedQuadProgramIdx].handle, "gPosition");
     app->programUniformLightingNormal = glGetUniformLocation(app->programs[app->texturedQuadProgramIdx].handle, "gNormal");
     app->programUniformLightingAlbedo = glGetUniformLocation(app->programs[app->texturedQuadProgramIdx].handle, "gAlbedo");
@@ -629,6 +637,19 @@ void Gui(App* app)
         if (ImGui::BeginMenu("Engine"))
         {
             ImGui::Checkbox("Info", &app->isInfo);
+            ImGui::Separator();
+            if(ImGui::BeginCombo("Render Target",app->renderTargets[app->currentRenderTarget].c_str()))
+            {
+                for (int i = 0; i < app->renderTargets.size(); ++i)
+                {
+                    bool is_selected = (app->renderTargets[app->currentRenderTarget] == app->renderTargets[i]);
+                    if (ImGui::Selectable(app->renderTargets[i].c_str(), is_selected))
+                        app->currentRenderTarget = i;
+                    if (is_selected)
+                        ImGui::SetItemDefaultFocus();
+                }
+                ImGui::EndCombo();
+            }
             ImGui::EndMenu();
         }
         ImGui::EndMainMenuBar();
@@ -719,6 +740,7 @@ void Render(App* app)
     glBindFramebuffer(GL_FRAMEBUFFER, app->framebufferHandle);
 
     glEnable(GL_DEPTH_TEST);
+    glEnable(GL_CULL_FACE);
     glClearColor(0.0f, 0.0f, 0.0f, 1.0f);
     glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
     glViewport(0, 0, app->displaySize.x, app->displaySize.y);
@@ -832,6 +854,8 @@ void Render(App* app)
     glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
     glUseProgram(app->programs[app->texturedQuadProgramIdx].handle);
     glBindVertexArray(app->vao);
+
+    glUniform1i(app->programUniformRenderTarget, app->currentRenderTarget);
 
     glActiveTexture(GL_TEXTURE0);
     glBindTexture(GL_TEXTURE_2D, app->positionAttachmentHandle);
