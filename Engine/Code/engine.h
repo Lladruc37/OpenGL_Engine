@@ -1,7 +1,3 @@
-//
-// engine.h: This file contains the types and functions relative to the engine.
-//
-
 #pragma once
 
 #include "platform.h"
@@ -13,9 +9,9 @@
 #include <glad/glad.h>
 #include "Camera.h"
 
-typedef glm::vec2  vec2;
-typedef glm::vec3  vec3;
-typedef glm::vec4  vec4;
+typedef glm::vec2 vec2;
+typedef glm::vec3 vec3;
+typedef glm::vec4 vec4;
 typedef glm::ivec2 ivec2;
 typedef glm::ivec3 ivec3;
 typedef glm::ivec4 ivec4;
@@ -24,20 +20,14 @@ struct Image
 {
     void* pixels;
     ivec2 size;
-    i32   nchannels =0;
-    i32   stride =0;
+    i32 nchannels = 0;
+    i32 stride = 0;
 };
 
 struct Texture
 {
-    GLuint      handle =0;
+    GLuint handle = 0;
     std::string filepath;
-};
-
-struct VertexV3V2
-{
-    glm::vec3 pos;
-    glm::vec2 uv;
 };
 
 struct OpenGLInfo
@@ -51,10 +41,10 @@ struct OpenGLInfo
 
 struct Program
 {
-    GLuint             handle =0;
-    std::string        filepath;
-    std::string        programName;
-    u64                lastWriteTimestamp =0; // What is this for?
+    GLuint handle = 0;
+    std::string filepath;
+    std::string programName;
+    u64 lastWriteTimestamp = 0;
     VertexBufferLayout vertexInputLayout;
 };
 
@@ -84,22 +74,19 @@ struct Mesh
 struct Material
 {
     std::string name;
-    vec3 albedo;
-    vec3 emissive;
-    vec3 specular;
-    f32 smoothness =0.0f;
-    u32 albedoTextureIdx =0;
-    u32 emissiveTextureIdx=0;
+    vec3 albedo = vec3(0.0f);
+    vec3 emissive = vec3(0.0f);
+    vec3 specular = vec3(0.0f);
+    f32 smoothness = 0.0f;
+    u32 albedoTextureIdx = 0;
+    u32 emissiveTextureIdx = 0;
     u32 specularTextureIdx = 0;
-    u32 normalsTextureIdx =0;
+    u32 normalsTextureIdx = 0;
     u32 bumpTextureIdx = 0;
 
     Material()
     {
         name = "";
-        albedo = vec3(0.0f);
-        emissive = vec3(0.0f);
-        specular = vec3(0.0f);
     }
 
     Material(std::string _name,
@@ -112,34 +99,28 @@ struct Material
         u32 _specularTextureIdx = 0,
         u32 _normalsTextureIdx = 0,
         u32 _bumpTextureIdx = 0)
-    {
-        name = _name;
-        albedo = _albedo;
-        emissive = _emissive;
-        specular = _specular;
-        smoothness = _smoothness;
-        albedoTextureIdx = _albedoTextureIdx;
-        emissiveTextureIdx = _emissiveTextureIdx;
-        specularTextureIdx = _specularTextureIdx;
-        normalsTextureIdx = _normalsTextureIdx;
-        bumpTextureIdx = _bumpTextureIdx;
-    }
+        : name(_name),
+        albedo(_albedo),
+        specular(_specular),
+        smoothness(_smoothness),
+        albedoTextureIdx(_albedoTextureIdx),
+        emissiveTextureIdx(_emissiveTextureIdx),
+        specularTextureIdx(_specularTextureIdx),
+        normalsTextureIdx(_normalsTextureIdx),
+        bumpTextureIdx(_bumpTextureIdx)
+    {}
 };
 
 struct Entity
 {
     glm::mat4 worldMatrix;
-    u32 modelIdx=0;
-    u32 localParamsOffset=0;
-    u32 localParamsSize=0;
+    u32 modelIdx = 0;
+    u32 localParamsOffset = 0;
+    u32 localParamsSize = 0;
 
     Entity(glm::mat4 worldMat, u32 modelIndex, u32 localOffset = 0, u32 localSize = 0)
-    {
-        worldMatrix = worldMat;
-        modelIdx = modelIndex;
-        localParamsOffset = localOffset;
-        localParamsSize = localSize;
-    }
+        : worldMatrix(worldMat),modelIdx(modelIndex),localParamsOffset(localOffset),localParamsSize(localSize)
+    {}
 };
 
 enum LightType
@@ -160,15 +141,8 @@ struct Light
     float constant;
 
     Light(LightType t, vec3 pos, vec3 dir, vec3 amb, vec3 diff, vec3 spec, float cons = 1.0f)
-    {
-        type = t;
-        position = pos;
-        direction = dir;
-        ambient = amb;
-        diffuse = diff;
-        specular = spec;
-        constant = cons;
-    }
+        : type(t),position(pos),direction(dir),ambient(amb),diffuse(diff),specular(spec),constant(cons)
+    {}
 };
 
 struct Buffer
@@ -177,74 +151,70 @@ struct Buffer
     GLenum type;
     GLint size = 0;
     GLint head = 0;
-    void* data; //mapped data
-};
-
-enum Mode
-{
-    Mode_TexturedQuad,
-    Mode_Count
+    void* data; //Mapped data
 };
 
 struct App
 {
-    // Loop
+    //--Loop--
     float deltaTime = 0.0f;
     float lastFrame = 0.0f;
     bool isRunning;
 
-    // Input
-    Input input;
-
-    // Graphics
+    //--Graphics--
     char gpuName[64];
     char openGlVersion[64];
-
     ivec2 displaySize;
 
-    u32 patrickModelId;
-    u32 planeModelId;
+    //--Input--
+    Input input;
+
+    //--Camera--
+    Camera camera;
+
+    //--Lists of loaded info--
     std::vector<Texture>  textures;
     std::vector<Material> materials;
     std::vector<Mesh> meshes;
     std::vector<Model> models;
     std::vector<Program>  programs;
+    std::vector<Light> lights;
+    std::vector<Entity> entities;
 
-    // program indices
+    //--VAO index--
+    GLuint vaoIdx;
+
+    //--Models indices--
+    u32 patrickModelIdx;
+    u32 planeModelIdx;
+
+    //--Program indices--
     u32 texturedMeshProgramIdx;
     u32 texturedQuadProgramIdx;
     u32 postProcessingProgramIdx;
 
-    //Global Params
+    //--Global Params--
     u32 globalParamsOffset;
     u32 globalParamsSize;
 
-    //Uniform
+    //--Uniform buffer--
     Buffer cbuffer;
     int maxUniformBufferSize;
     int uniformBufferAlignment;
 
-    //Lights
-    std::vector<Light> lights;
-
-    //entities
-    std::vector<Entity> entities;
-
-    //Camera
-    Camera camera;
-
-    // texture indices
+    //--Texture indices--
     u32 diceTexIdx;
     u32 whiteTexIdx;
     u32 blackTexIdx;
     u32 normalTexIdx;
     u32 magentaTexIdx;
 
-    //Info
+    //--ImGui & related--
     OpenGLInfo info;
     bool isInfo = false;
+    bool isEngine = false;
 
-    //Frame buffer object
+    //--Frame buffer object--
     GLuint framebufferHandle;
 
     //Attachments
@@ -254,58 +224,50 @@ struct App
     GLuint specularAttachmentHandle;
     GLuint depthAttachmentHandle;
 
-    //Post processing
+    //--Post processing frame buffer--
     GLuint framebufferPostProcessingHandle;
 
     //Attachments
     GLuint finalColorAttachmentHandle;
 
-    // Mode
-    Mode mode;
+    //--Program uniforms--
+    //Mesh
+    GLuint programUniformDiffuse;
 
-    // Embedded geometry (in-editor simple meshes such as
-    // a screen filling quad, a cube, a sphere...)
-    GLuint embeddedVertices;
-    GLuint embeddedElements;
-
-    // Location of the texture uniform in the textured quad shader
-    GLuint programUniformTexture;
-
-    std::vector<std::string> renderTargets;
-    int currentRenderTarget;
+    //Textured quad
     GLuint programUniformRenderTarget;
     GLuint programUniformLightingPosition;
     GLuint programUniformLightingNormal;
     GLuint programUniformLightingAlbedo;
     GLuint programUniformLightingSpec;
-    GLuint programUniformPostProcessing;
 
-    // VAO object to link our screen filling quad with our textured quad shader
-    GLuint vao;
+    //Post processing
+    GLuint programUniformPostProcessing;
+    std::vector<std::string> renderTargets;
+    int currentRenderTarget;
 };
 
-void Init(App* app);
-
-void Gui(App* app);
-
-void Update(App* app);
-
-void Render(App* app);
-
-GLuint FindVAO(Mesh& mesh, u32 submeshIndex, const Program& program);
-
+GLuint CreateProgramFromSource(String programSource, const char* shaderName);
+u32 LoadProgram(App* app, const char* filepath, const char* programName);
+Image LoadImage(const char* filename);
+void FreeImage(Image image);
+GLuint CreateTexture2DFromImage(Image image);
 u32 LoadTexture2D(App* app, const char* filepath);
 
 u32 CreateTextureQuad(App* app);
-
 void CreateTextureQuadGeometry(App* app, Material myMaterial);
+GLuint FindVAO(Mesh& mesh, u32 submeshIndex, const Program& program);
 
-GLuint CreateTexture2DFromImage(Image image);
+void Init(App* app);
+void InfoInit(App* app);
+void DebugInit();
+void FrameBufferInit(App* app);
+void FrameBufferCheck();
 
-void FreeImage(Image image);
+void Gui(App* app);
+void Update(App* app);
 
-Image LoadImage(const char* filename);
-
-u32 LoadProgram(App* app, const char* filepath, const char* programName);
-
-GLuint CreateProgramFromSource(String programSource, const char* shaderName);
+void Render(App* app);
+void GeometryPass(App* app);
+void LightingPass(App* app);
+void PostProcessingPass(App* app);

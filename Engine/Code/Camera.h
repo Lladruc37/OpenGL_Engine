@@ -17,7 +17,7 @@ struct Camera
     glm::vec3 cameraPos = glm::vec3(0.0f, 0.0f, 5.0f);
     glm::vec3 cameraDirection;
 
-    float pitch = 0.0f;
+    float pitch = 90.0f;
     float yaw = -90.0f;
     //float roll;
 
@@ -64,11 +64,12 @@ struct Camera
 
     void ProcessMouseInput(glm::vec2 delta)
     {
-        yaw += delta.x*0.25;
-        pitch -= delta.y*0.25;
+        yaw += delta.x * 0.25;
+        pitch -= delta.y * 0.25;
 
         if (pitch > 89.0f)
             pitch = 89.0f;
+
         if (pitch < -89.0f)
             pitch = -89.0f;
     }

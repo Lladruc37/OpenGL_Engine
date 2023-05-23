@@ -57,12 +57,6 @@
     <ClCompile Include="Code\Debugging.cpp">
       <Filter>Engine</Filter>
     </ClCompile>
-    <ClCompile Include="Code\TexturedQuad.cpp">
-      <Filter>Engine</Filter>
-    </ClCompile>
-    <ClCompile Include="Code\Camera.cpp">
-      <Filter>Engine</Filter>
-    </ClCompile>
     <ClCompile Include="Code\buffer_management.cpp">
       <Filter>Engine</Filter>
     </ClCompile>
@@ -108,9 +102,6 @@
       <Filter>Stb</Filter>
     </ClInclude>
     <ClInclude Include="Code\BufferObjects.h">
-      <Filter>Engine</Filter>
-    </ClInclude>
-    <ClInclude Include="Code\MeshObjects.h">
       <Filter>Engine</Filter>
     </ClInclude>
     <ClInclude Include="Code\assimp_model_loading.h">

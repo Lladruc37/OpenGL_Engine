@@ -1,9 +1,3 @@
-//
-// platform.cpp : This file contains the 'main' function. Program execution begins and ends there.
-// The platform layer is in charge to create the environment necessary so the engine disposes of what
-// it needs in order to create the application (e.g. window, graphics context, I/O, allocators, etc).
-//
-
 #ifdef _WIN32
 #define VC_EXTRALEAN
 #define WIN32_LEAN_AND_MEAN
@@ -32,9 +26,9 @@
 u8* GlobalFrameArenaMemory = NULL;
 u32 GlobalFrameArenaHead = 0;
 
-void OnGlfwError(int errorCode, const char *errorMessage)
+void OnGlfwError(int errorCode, const char* errorMessage)
 {
-	fprintf(stderr, "glfw failed with error %d: %s\n", errorCode, errorMessage);
+    fprintf(stderr, "glfw failed with error %d: %s\n", errorCode, errorMessage);
 }
 
 void OnGlfwMouseMoveEvent(GLFWwindow* window, double xpos, double ypos)
@@ -55,25 +49,25 @@ void OnGlfwMouseEvent(GLFWwindow* window, int button, int event, int modifiers)
     switch (event) {
         case GLFW_PRESS:
             switch (button) {
-                case GLFW_MOUSE_BUTTON_RIGHT: app->input.mouseButtons[RIGHT] = BUTTON_PRESS; break;
-                case GLFW_MOUSE_BUTTON_LEFT:  app->input.mouseButtons[LEFT]  = BUTTON_PRESS; break;
+            case GLFW_MOUSE_BUTTON_RIGHT: app->input.mouseButtons[RIGHT] = BUTTON_PRESS; break;
+            case GLFW_MOUSE_BUTTON_LEFT:  app->input.mouseButtons[LEFT] = BUTTON_PRESS; break;
             } break;
         case GLFW_RELEASE:
             switch (button) {
-                case GLFW_MOUSE_BUTTON_RIGHT: app->input.mouseButtons[RIGHT] = BUTTON_RELEASE; break;
-                case GLFW_MOUSE_BUTTON_LEFT:  app->input.mouseButtons[LEFT]  = BUTTON_RELEASE; break;
+            case GLFW_MOUSE_BUTTON_RIGHT: app->input.mouseButtons[RIGHT] = BUTTON_RELEASE; break;
+            case GLFW_MOUSE_BUTTON_LEFT:  app->input.mouseButtons[LEFT] = BUTTON_RELEASE; break;
             } break;
     }
 }
 
 void OnGlfwScrollEvent(GLFWwindow* window, double xoffset, double yoffset)
 {
-    // Nothing do yet... maybe zoom in/out in the future?
+    //Nothing yet...
 }
 
 void OnGlfwKeyboardEvent(GLFWwindow* window, int key, int scancode, int action, int mods)
 {
-    // Remap key to our enum values
+    //--Remap key to our enum values--
     switch (key) {
         case GLFW_KEY_SPACE:  key = K_SPACE; break;
         case GLFW_KEY_0: key = K_0; break; case GLFW_KEY_1: key = K_1; break; case GLFW_KEY_2: key = K_2; break;
@@ -103,7 +97,7 @@ void OnGlfwKeyboardEvent(GLFWwindow* window, int key, int scancode, int action, 
 
 void OnGlfwCharEvent(GLFWwindow* window, unsigned int character)
 {
-    // Nothing to do yet
+    //Nothing yet...
 }
 
 void OnGlfwResizeFramebuffer(GLFWwindow* window, int width, int height)
@@ -120,12 +114,12 @@ void OnGlfwCloseWindow(GLFWwindow* window)
 
 int main()
 {
-    App app         = {};
-    app.deltaTime   = 1.0f/60.0f;
+    App app = {};
+    app.deltaTime = 1.0f / 60.0f;
     app.displaySize = ivec2(WINDOW_WIDTH, WINDOW_HEIGHT);
-    app.isRunning   = true;
+    app.isRunning = true;
 
-		glfwSetErrorCallback(OnGlfwError);
+    glfwSetErrorCallback(OnGlfwError);
 
     if (!glfwInit())
     {
@@ -158,8 +152,8 @@ int main()
 
     glfwMakeContextCurrent(window);
 
-    // Load all OpenGL functions using the glfw loader function
-    if (!gladLoadGLLoader((GLADloadproc) glfwGetProcAddress))
+    //--Load all OpenGL functions using the glfw loader function--
+    if (!gladLoadGLLoader((GLADloadproc)glfwGetProcAddress))
     {
         ELOG("Failed to initialize OpenGL context\n");
         return -1;
@@ -170,18 +164,14 @@ int main()
 
     ImGuiIO& io = ImGui::GetIO(); (void)io;
     io.ConfigFlags |= ImGuiConfigFlags_NavEnableKeyboard;       // Enable Keyboard Controls
-    //io.ConfigFlags |= ImGuiConfigFlags_NavEnableGamepad;      // Enable Gamepad Controls
     io.ConfigFlags |= ImGuiConfigFlags_DockingEnable;           // Enable Docking
     io.ConfigFlags |= ImGuiConfigFlags_ViewportsEnable;         // Enable Multi-Viewport / Platform Windows
     io.ConfigFlags |= ImGuiConfigFlags_NavEnableSetMousePos;
-    //io.ConfigViewportsNoAutoMerge = true;
-    //io.ConfigViewportsNoTaskBarIcon = true;
 
-    // Setup Dear ImGui style
+    //--Setup Dear ImGui style--
     ImGui::StyleColorsDark();
-    //ImGui::StyleColorsClassic();
 
-    // When viewports are enabled we tweak WindowRounding/WindowBg so platform windows can look identical to regular ones.
+    //When viewports are enabled we tweak WindowRounding/WindowBg so platform windows can look identical to regular ones
     ImGuiStyle& style = ImGui::GetStyle();
     if (io.ConfigFlags & ImGuiConfigFlags_ViewportsEnable)
     {
@@ -209,17 +199,17 @@ int main()
 
     while (app.isRunning)
     {
-        // Tell GLFW to call platform callbacks
+        //Tell GLFW to call platform callbacks
         glfwPollEvents();
 
-        // ImGui
+        //--ImGui--
         ImGui_ImplOpenGL3_NewFrame();
         ImGui_ImplGlfw_NewFrame();
         ImGui::NewFrame();
         Gui(&app);
         ImGui::Render();
 
-        // Clear input state if required by ImGui
+        //Clear input state if required by ImGui
         if (ImGui::GetIO().WantCaptureKeyboard)
             for (u32 i = 0; i < KEY_COUNT; ++i)
                 app.input.keys[i] = BUTTON_IDLE;
@@ -228,26 +218,24 @@ int main()
             for (u32 i = 0; i < MOUSE_BUTTON_COUNT; ++i)
                 app.input.mouseButtons[i] = BUTTON_IDLE;
 
-        // Update
         Update(&app);
 
-        // Transition input key/button states
+        //--Transition input key/button states--
         if (!ImGui::GetIO().WantCaptureKeyboard)
             for (u32 i = 0; i < KEY_COUNT; ++i)
-                if      (app.input.keys[i] == BUTTON_PRESS)   app.input.keys[i] = BUTTON_PRESSED;
+                if (app.input.keys[i] == BUTTON_PRESS)   app.input.keys[i] = BUTTON_PRESSED;
                 else if (app.input.keys[i] == BUTTON_RELEASE) app.input.keys[i] = BUTTON_IDLE;
 
         if (!ImGui::GetIO().WantCaptureMouse)
             for (u32 i = 0; i < MOUSE_BUTTON_COUNT; ++i)
-                if      (app.input.mouseButtons[i] == BUTTON_PRESS)   app.input.mouseButtons[i] = BUTTON_PRESSED;
+                if (app.input.mouseButtons[i] == BUTTON_PRESS)   app.input.mouseButtons[i] = BUTTON_PRESSED;
                 else if (app.input.mouseButtons[i] == BUTTON_RELEASE) app.input.mouseButtons[i] = BUTTON_IDLE;
 
         app.input.mouseDelta = glm::vec2(0.0f, 0.0f);
 
-        // Render
         Render(&app);
 
-        // ImGui Render
+        //--ImGui Render--
         ImGui_ImplOpenGL3_RenderDrawData(ImGui::GetDrawData());
         if (io.ConfigFlags & ImGuiConfigFlags_ViewportsEnable) {
             GLFWwindow* backup_current_context = glfwGetCurrentContext();
@@ -256,15 +244,15 @@ int main()
             glfwMakeContextCurrent(backup_current_context);
         }
 
-        // Present image on screen
+        //--Present image on screen--
         glfwSwapBuffers(window);
 
-        // Frame time
+        //--Frame time--
         f64 currentFrameTime = glfwGetTime();
         app.deltaTime = (f32)(currentFrameTime - lastFrameTime);
         lastFrameTime = currentFrameTime;
 
-        // Reset frame allocator
+        //Reset frame allocator
         GlobalFrameArenaHead = 0;
     }
 
@@ -274,9 +262,7 @@ int main()
     ImGui_ImplGlfw_Shutdown();
 
     glfwDestroyWindow(window);
-
     glfwTerminate();
-
     return 0;
 }
 
@@ -290,7 +276,7 @@ u32 Strlen(const char* string)
 void* PushSize(u32 byteCount)
 {
     ASSERT(GlobalFrameArenaHead + byteCount <= GLOBAL_FRAME_ARENA_SIZE,
-           "Trying to allocate more temp memory than available");
+        "Trying to allocate more temp memory than available");
 
     u8* curPtr = GlobalFrameArenaMemory + GlobalFrameArenaHead;
     GlobalFrameArenaHead += byteCount;
@@ -300,7 +286,7 @@ void* PushSize(u32 byteCount)
 void* PushBytes(const void* bytes, u32 byteCount)
 {
     ASSERT(GlobalFrameArenaHead + byteCount <= GLOBAL_FRAME_ARENA_SIZE,
-            "Trying to allocate more temp memory than available");
+        "Trying to allocate more temp memory than available");
 
     u8* srcPtr = (u8*)bytes;
     u8* curPtr = GlobalFrameArenaMemory + GlobalFrameArenaHead;
@@ -313,19 +299,19 @@ void* PushBytes(const void* bytes, u32 byteCount)
 u8* PushChar(u8 c)
 {
     ASSERT(GlobalFrameArenaHead + 1 <= GLOBAL_FRAME_ARENA_SIZE,
-            "Trying to allocate more temp memory than available");
+        "Trying to allocate more temp memory than available");
     u8* ptr = GlobalFrameArenaMemory + GlobalFrameArenaHead;
     GlobalFrameArenaHead++;
     *ptr = c;
     return ptr;
 }
 
-String MakeString(const char *cstr)
+String MakeString(const char* cstr)
 {
     String str = {};
     str.len = Strlen(cstr);
     str.str = (char*)PushBytes(cstr, str.len);
-              PushChar(0);
+    PushChar(0);
     return str;
 }
 
@@ -334,9 +320,9 @@ String MakePath(String dir, String filename)
     String str = {};
     str.len = dir.len + filename.len + 1;
     str.str = (char*)PushBytes(dir.str, dir.len);
-              PushChar('/');
-              PushBytes(filename.str, filename.len);
-              PushChar(0);
+    PushChar('/');
+    PushBytes(filename.str, filename.len);
+    PushChar(0);
     return str;
 }
 
@@ -351,7 +337,7 @@ String GetDirectoryPart(String path)
     }
     str.len = (u32)len;
     str.str = (char*)PushBytes(path.str, str.len);
-              PushChar(0);
+    PushChar(0);
     return str;
 }
 
@@ -390,14 +376,15 @@ u64 GetFileLastWriteTimestamp(const char* filepath)
     } conversor;
 
     WIN32_FILE_ATTRIBUTE_DATA Data;
-    if(GetFileAttributesExA(filepath, GetFileExInfoStandard, &Data)) {
+    if(GetFileAttributesExA(filepath, GetFileExInfoStandard, &Data))
+    {
         conversor.filetime = Data.ftLastWriteTime;
         return(conversor.u64time);
     }
 #else
-    // NOTE: This has not been tested in unix-like systems
     struct stat attrib;
-    if (stat(filepath, &attrib) == 0) {
+    if (stat(filepath, &attrib) == 0)
+    {
         return attrib.st_mtime;
     }
 #endif

@@ -21,11 +21,9 @@
   <ItemGroup>
     <ClCompile Include="Code\assimp_model_loading.cpp" />
     <ClCompile Include="Code\buffer_management.cpp" />
-    <ClCompile Include="Code\Camera.cpp" />
     <ClCompile Include="Code\Debugging.cpp" />
     <ClCompile Include="Code\engine.cpp" />
     <ClCompile Include="Code\platform.cpp" />
-    <ClCompile Include="Code\TexturedQuad.cpp" />
     <ClCompile Include="ThirdParty\glad\include\glad\glad.c" />
     <ClCompile Include="ThirdParty\imgui-docking\imgui.cpp" />
     <ClCompile Include="ThirdParty\imgui-docking\imgui_demo.cpp" />
@@ -43,7 +41,6 @@
     <ClInclude Include="Code\Camera.h" />
     <ClInclude Include="Code\Debugging.h" />
     <ClInclude Include="Code\engine.h" />
-    <ClInclude Include="Code\MeshObjects.h" />
     <ClInclude Include="Code\platform.h" />
     <ClInclude Include="Code\TexturedQuad.h" />
     <ClInclude Include="ThirdParty\glad\include\glad\glad.h" />

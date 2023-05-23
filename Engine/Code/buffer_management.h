@@ -6,9 +6,7 @@
 struct Buffer;
 
 bool IsPowerOf2(u32 value);
-
 u32 Align(u32 value, u32 alignment);
-
 Buffer CreateBuffer(u32 size, GLenum type, GLenum usage);
 
 #define CreateConstantBuffer(size) CreateBuffer(size, GL_UNIFORM_BUFFER, GL_STREAM_DRAW)
@@ -16,13 +14,9 @@ Buffer CreateBuffer(u32 size, GLenum type, GLenum usage);
 #define CreateStaticIndexBuffer(size) CreateBuffer(size, GL_ELEMENT_ARRAY_BUFFER, GL_STATIC_DRAW)
 
 void BindBuffer(const Buffer& buffer);
-
 void MapBuffer(Buffer& buffer, GLenum access);
-
 void UnmapBuffer(Buffer& buffer);
-
 void AlignHead(Buffer& buffer, u32 alignment);
-
 void PushAlignedData(Buffer& buffer, const void* data, u32 size, u32 alignment);
 
 #define PushData(buffer, data, size) PushAlignedData(buffer, data, size, 1)

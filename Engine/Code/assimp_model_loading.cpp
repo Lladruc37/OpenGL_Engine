@@ -1,4 +1,3 @@
-
 #include "assimp_model_loading.h"
 #include <assimp/cimport.h>
 #include <assimp/scene.h>
@@ -61,11 +60,9 @@ void ProcessAssimpMaterial(App* app, aiMaterial* material, Material& myMaterial,
 		String filepath = MakePath(directory, filename);
 		myMaterial.bumpTextureIdx = LoadTexture2D(app, filepath.str);
 	}
-
-	//myMaterial.createNormalFromBump();
 }
 
-void ProcessAssimpMesh(const aiScene* scene, aiMesh *mesh, Mesh *myMesh, u32 baseMeshMaterialIndex, std::vector<u32>& submeshMaterialIndices)
+void ProcessAssimpMesh(const aiScene* scene, aiMesh* mesh, Mesh* myMesh, u32 baseMeshMaterialIndex, std::vector<u32>& submeshMaterialIndices)
 {
 	std::vector<float> vertices;
 	std::vector<u32> indices;
@@ -73,8 +70,8 @@ void ProcessAssimpMesh(const aiScene* scene, aiMesh *mesh, Mesh *myMesh, u32 bas
 	bool hasTexCoords = false;
 	bool hasTangentSpace = false;
 
-	// process vertices
-	for(unsigned int i = 0; i < mesh->mNumVertices; i++)
+	//--Process vertices--
+	for (unsigned int i = 0; i < mesh->mNumVertices; i++)
 	{
 		vertices.push_back(mesh->mVertices[i].x);
 		vertices.push_back(mesh->mVertices[i].y);
@@ -83,85 +80,79 @@ void ProcessAssimpMesh(const aiScene* scene, aiMesh *mesh, Mesh *myMesh, u32 bas
 		vertices.push_back(mesh->mNormals[i].y);
 		vertices.push_back(mesh->mNormals[i].z);
 
-		if(mesh->mTextureCoords[0]) // does the mesh contain texture coordinates?
+		if (mesh->mTextureCoords[0])
 		{
 			hasTexCoords = true;
 			vertices.push_back(mesh->mTextureCoords[0][i].x);
 			vertices.push_back(mesh->mTextureCoords[0][i].y);
 		}
 
-		if(mesh->mTangents != nullptr && mesh->mBitangents)
+		if (mesh->mTangents != nullptr && mesh->mBitangents)
 		{
 			hasTangentSpace = true;
 			vertices.push_back(mesh->mTangents[i].x);
 			vertices.push_back(mesh->mTangents[i].y);
 			vertices.push_back(mesh->mTangents[i].z);
 
-			// For some reason ASSIMP gives me the bitangents flipped.
-			// Maybe it's my fault, but when I generate my own geometry
-			// in other files (see the generation of standard assets)
-			// and all the bitangents have the orientation I expect,
-			// everything works ok.
-			// I think that (even if the documentation says the opposite)
-			// it returns a left-handed tangent space matrix.
-			// SOLUTION: I invert the components of the bitangent here.
+			// ASSIMP gives the bitangents flipped
+			// Easiest solution I found was to invert the components of the bitangent
 			vertices.push_back(-mesh->mBitangents[i].x);
 			vertices.push_back(-mesh->mBitangents[i].y);
 			vertices.push_back(-mesh->mBitangents[i].z);
 		}
 	}
 
-	// process indices
-	for(unsigned int i = 0; i < mesh->mNumFaces; i++)
+	//--Process indices--
+	for (unsigned int i = 0; i < mesh->mNumFaces; i++)
 	{
 		aiFace face = mesh->mFaces[i];
-		for(unsigned int j = 0; j < face.mNumIndices; j++)
+		for (unsigned int j = 0; j < face.mNumIndices; j++)
 		{
 			indices.push_back(face.mIndices[j]);
 		}
 	}
 
-	// store the proper (previously proceessed) material for this mesh
+	//--Store the material for this mesh--
 	submeshMaterialIndices.push_back(baseMeshMaterialIndex + mesh->mMaterialIndex);
 
-	// create the vertex format
+	//--Create the vertex format--
 	VertexBufferLayout vertexBufferLayout = {};
-	vertexBufferLayout.attributes.push_back( VertexBufferAttribute{ 0, 3, 0 } );
-	vertexBufferLayout.attributes.push_back( VertexBufferAttribute{ 1, 3, 3*sizeof(float) } );
+	vertexBufferLayout.attributes.push_back(VertexBufferAttribute{ 0, 3, 0 });
+	vertexBufferLayout.attributes.push_back(VertexBufferAttribute{ 1, 3, 3 * sizeof(float) });
 	vertexBufferLayout.stride = 6 * sizeof(float);
 	if (hasTexCoords)
 	{
-		vertexBufferLayout.attributes.push_back( VertexBufferAttribute{ 2, 2, vertexBufferLayout.stride } );
+		vertexBufferLayout.attributes.push_back(VertexBufferAttribute{ 2, 2, vertexBufferLayout.stride });
 		vertexBufferLayout.stride += 2 * sizeof(float);
 	}
 	if (hasTangentSpace)
 	{
-		vertexBufferLayout.attributes.push_back( VertexBufferAttribute{ 3, 3, vertexBufferLayout.stride } );
+		vertexBufferLayout.attributes.push_back(VertexBufferAttribute{ 3, 3, vertexBufferLayout.stride });
 		vertexBufferLayout.stride += 3 * sizeof(float);
 
-		vertexBufferLayout.attributes.push_back( VertexBufferAttribute{ 4, 3, vertexBufferLayout.stride } );
+		vertexBufferLayout.attributes.push_back(VertexBufferAttribute{ 4, 3, vertexBufferLayout.stride });
 		vertexBufferLayout.stride += 3 * sizeof(float);
 	}
 
-	// add the submesh into the mesh
+	//--Add the submesh into the mesh--
 	Submesh submesh = {};
 	submesh.vertexBufferLayout = vertexBufferLayout;
 	submesh.vertices.swap(vertices);
 	submesh.indices.swap(indices);
-	myMesh->submeshes.push_back( submesh );
+	myMesh->submeshes.push_back(submesh);
 }
 
-void ProcessAssimpNode(const aiScene* scene, aiNode *node, Mesh *myMesh, u32 baseMeshMaterialIndex, std::vector<u32>& submeshMaterialIndices)
+void ProcessAssimpNode(const aiScene* scene, aiNode* node, Mesh* myMesh, u32 baseMeshMaterialIndex, std::vector<u32>& submeshMaterialIndices)
 {
-	// process all the node's meshes (if any)
-	for(unsigned int i = 0; i < node->mNumMeshes; i++)
+	//--Process all the node's meshes--
+	for (unsigned int i = 0; i < node->mNumMeshes; i++)
 	{
-		aiMesh *mesh = scene->mMeshes[node->mMeshes[i]];
+		aiMesh* mesh = scene->mMeshes[node->mMeshes[i]];
 		ProcessAssimpMesh(scene, mesh, myMesh, baseMeshMaterialIndex, submeshMaterialIndices);
 	}
 
-	// then do the same for each of its children
-	for(unsigned int i = 0; i < node->mNumChildren; i++)
+	//--Loop for each children--
+	for (unsigned int i = 0; i < node->mNumChildren; i++)
 	{
 		ProcessAssimpNode(scene, node->mChildren[i], myMesh, baseMeshMaterialIndex, submeshMaterialIndices);
 	}
@@ -170,18 +161,18 @@ void ProcessAssimpNode(const aiScene* scene, aiNode *node, Mesh *myMesh, u32 bas
 u32 LoadModel(App* app, const char* filename)
 {
 	const aiScene* scene = aiImportFile(filename,
-										aiProcess_Triangulate           |
-										aiProcess_GenSmoothNormals      |
-										aiProcess_CalcTangentSpace      |
-										aiProcess_JoinIdenticalVertices |
-										aiProcess_PreTransformVertices  |
-										aiProcess_ImproveCacheLocality  |
-										aiProcess_OptimizeMeshes        |
-										aiProcess_SortByPType); //TODO: AFEGIR FLAG PER TANGENTS
+		aiProcess_Triangulate |
+		aiProcess_GenSmoothNormals |
+		aiProcess_CalcTangentSpace |
+		aiProcess_JoinIdenticalVertices |
+		aiProcess_PreTransformVertices |
+		aiProcess_ImproveCacheLocality |
+		aiProcess_OptimizeMeshes |
+		aiProcess_SortByPType);
 
 	if (!scene)
 	{
-		std::cout << "Error loading mesh "<< filename << " - " << aiGetErrorString();
+		std::cout << "Error loading mesh " << filename << " - " << aiGetErrorString();
 		return UINT32_MAX;
 	}
 
@@ -196,7 +187,7 @@ u32 LoadModel(App* app, const char* filename)
 
 	String directory = GetDirectoryPart(MakeString(filename));
 
-	// Create a list of materials
+	//--Create a list of materials--
 	u32 baseMeshMaterialIndex = (u32)app->materials.size();
 	for (unsigned int i = 0; i < scene->mNumMaterials; ++i)
 	{
@@ -215,7 +206,7 @@ u32 LoadModel(App* app, const char* filename)
 	for (u32 i = 0; i < mesh.submeshes.size(); ++i)
 	{
 		vertexBufferSize += mesh.submeshes[i].vertices.size() * sizeof(float);
-		indexBufferSize  += mesh.submeshes[i].indices.size()  * sizeof(u32);
+		indexBufferSize += mesh.submeshes[i].indices.size() * sizeof(u32);
 	}
 
 	glGenBuffers(1, &mesh.vertexBufferHandle);
@@ -238,7 +229,7 @@ u32 LoadModel(App* app, const char* filename)
 		verticesOffset += verticesSize;
 
 		const void* indicesData = mesh.submeshes[i].indices.data();
-		const u32   indicesSize = mesh.submeshes[i].indices.size() * sizeof(u32);
+		const u32 indicesSize = mesh.submeshes[i].indices.size() * sizeof(u32);
 		glBufferSubData(GL_ELEMENT_ARRAY_BUFFER, indicesOffset, indicesSize, indicesData);
 		mesh.submeshes[i].indexOffset = indicesOffset;
 		indicesOffset += indicesSize;
