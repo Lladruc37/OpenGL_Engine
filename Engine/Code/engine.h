@@ -60,6 +60,11 @@ struct Model
 {
     u32 meshIdx = 0;
     std::vector<u32> materialIdx;
+
+    Model(u32 _meshIdx = 0) : meshIdx(_meshIdx)
+    {
+        materialIdx.clear();
+    }
 };
 
 struct Submesh
@@ -70,6 +75,15 @@ struct Submesh
     u32 vertexOffset = 0;
     u32 indexOffset = 0;
     std::vector<VAO> vaos;
+
+    Submesh(u32 _vertexOffset = 0, u32 _indexOffset = 0)
+        : vertexOffset(_vertexOffset), indexOffset(_indexOffset)
+    {
+        vertexBufferLayout = VertexBufferLayout();
+        vertices.clear();
+        indices.clear();
+        vaos.clear();
+    }
 };
 
 struct Mesh
@@ -77,6 +91,12 @@ struct Mesh
     std::vector<Submesh> submeshes;
     GLuint vertexBufferHandle = 0;
     GLuint indexBufferHandle = 0;
+
+    Mesh(GLuint _vertexBufferHandle = 0,GLuint _indexBufferHandle = 0)
+        : vertexBufferHandle(_vertexBufferHandle),indexBufferHandle(_indexBufferHandle)
+    {
+        submeshes.clear();
+    }
 };
 
 struct Material

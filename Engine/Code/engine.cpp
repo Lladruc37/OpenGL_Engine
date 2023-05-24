@@ -262,14 +262,14 @@ void CreateTextureQuadGeometry(App* app, Material myMaterial)
     -0.5f, 0.5f, 0.0f, 0.0f, 0.0f, 1.0f, 0.0f, 1.0f, //top left
     };
 
-    Submesh submesh;
+    Submesh submesh = Submesh();
     for (int i = 0; i < 6; ++i)
         submesh.indices.push_back(indices[i]);
 
     for (int i = 0; i < 20; ++i)
         submesh.vertices.push_back(vertices[i]);
 
-    Mesh mesh;
+    Mesh mesh = Mesh();
     glGenBuffers(1, &mesh.vertexBufferHandle);
     glBindBuffer(GL_ARRAY_BUFFER, mesh.vertexBufferHandle);
     glBufferData(GL_ARRAY_BUFFER, sizeof(vertices), vertices, GL_STATIC_DRAW);
@@ -296,12 +296,12 @@ void CreateTextureQuadGeometry(App* app, Material myMaterial)
     submesh.vaos.push_back(VAO{ vao,app->programs[app->texturedMeshProgramIdx].handle });
 
     //Create the vertex format
-    VertexBufferLayout vertexBufferLayout = {};
-    vertexBufferLayout.attributes.push_back(VertexBufferAttribute{ 0, 3, 0 });
+    VertexBufferLayout vertexBufferLayout = VertexBufferLayout();
+    vertexBufferLayout.attributes.push_back(VertexBufferAttribute( 0, 3, 0 ));
     vertexBufferLayout.stride = 3 * sizeof(float);
-    vertexBufferLayout.attributes.push_back(VertexBufferAttribute{ 1, 3, vertexBufferLayout.stride });
+    vertexBufferLayout.attributes.push_back(VertexBufferAttribute( 1, 3, vertexBufferLayout.stride ));
     vertexBufferLayout.stride += 3 * sizeof(float);
-    vertexBufferLayout.attributes.push_back(VertexBufferAttribute{ 2, 2, vertexBufferLayout.stride });
+    vertexBufferLayout.attributes.push_back(VertexBufferAttribute( 2, 2, vertexBufferLayout.stride ));
     vertexBufferLayout.stride += 2 * sizeof(float);
     submesh.vertexBufferLayout = vertexBufferLayout;
     submesh.vertexOffset = 0;
@@ -310,7 +310,7 @@ void CreateTextureQuadGeometry(App* app, Material myMaterial)
     app->materials.push_back(myMaterial);
     mesh.submeshes.push_back(submesh);
     app->meshes.push_back(mesh);
-    Model model;
+    Model model = Model();
     model.materialIdx.push_back(app->materials.size() - 1u);
     model.meshIdx = (u32)app->meshes.size() - 1u;
     app->models.push_back(model);

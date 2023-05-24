@@ -50,7 +50,7 @@ struct Material
 uniform Material material;
 
 float near = 0.1; 
-float far = 10.0; 
+float far = 20.0; 
 
 float LinearizeDepth(float depth) 
 {
