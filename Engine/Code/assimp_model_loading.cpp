@@ -116,7 +116,7 @@ void ProcessAssimpMesh(const aiScene* scene, aiMesh* mesh, Mesh* myMesh, u32 bas
 	submeshMaterialIndices.push_back(baseMeshMaterialIndex + mesh->mMaterialIndex);
 
 	//--Create the vertex format--
-	VertexBufferLayout vertexBufferLayout = {};
+	VertexBufferLayout vertexBufferLayout = VertexBufferLayout();
 	vertexBufferLayout.attributes.push_back(VertexBufferAttribute{ 0, 3, 0 });
 	vertexBufferLayout.attributes.push_back(VertexBufferAttribute{ 1, 3, 3 * sizeof(float) });
 	vertexBufferLayout.stride = 6 * sizeof(float);
@@ -135,7 +135,7 @@ void ProcessAssimpMesh(const aiScene* scene, aiMesh* mesh, Mesh* myMesh, u32 bas
 	}
 
 	//--Add the submesh into the mesh--
-	Submesh submesh = {};
+	Submesh submesh = Submesh();
 	submesh.vertexBufferLayout = vertexBufferLayout;
 	submesh.vertices.swap(vertices);
 	submesh.indices.swap(indices);

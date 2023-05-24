@@ -34,10 +34,10 @@ void OnGlfwError(int errorCode, const char* errorMessage)
 void OnGlfwMouseMoveEvent(GLFWwindow* window, double xpos, double ypos)
 {
     App* app = (App*)glfwGetWindowUserPointer(window);
-    app->input.mouseDelta.x = xpos - app->input.mousePos.x;
-    app->input.mouseDelta.y = ypos - app->input.mousePos.y;
-    app->input.mousePos.x = xpos;
-    app->input.mousePos.y = ypos;
+    app->input.mouseDelta.x = (float)xpos - app->input.mousePos.x;
+    app->input.mouseDelta.y = (float)ypos - app->input.mousePos.y;
+    app->input.mousePos.x = (float)xpos;
+    app->input.mousePos.y = (float)ypos;
 
     app->camera.ProcessMouseInput(app->input.mouseDelta);
 }

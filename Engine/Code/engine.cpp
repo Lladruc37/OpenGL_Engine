@@ -89,7 +89,7 @@ u32 LoadProgram(App* app, const char* filepath, const char* programName)
 {
     String programSource = ReadTextFile(filepath);
 
-    Program program = {};
+    Program program = Program();
     program.handle = CreateProgramFromSource(programSource, programName);
     program.filepath = filepath;
     program.programName = programName;
@@ -130,7 +130,7 @@ u32 LoadProgram(App* app, const char* filepath, const char* programName)
         default:
             break;
         }
-        program.vertexInputLayout.attributes.push_back({ attributeLocation,componentCount });
+        program.vertexInputLayout.attributes.push_back(VertexBufferAttribute(attributeLocation,componentCount,0));
     }
     delete[] attributeName;
     app->programs.push_back(program);
@@ -280,7 +280,7 @@ void CreateTextureQuadGeometry(App* app, Material myMaterial)
     glBufferData(GL_ELEMENT_ARRAY_BUFFER, sizeof(indices), indices, GL_STATIC_DRAW);
     glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, 0);
 
-    GLuint vao;
+    GLuint vao = 0;
     glGenVertexArrays(1, &vao);
     glBindVertexArray(vao);
     glBindBuffer(GL_ARRAY_BUFFER, mesh.vertexBufferHandle);
@@ -388,6 +388,7 @@ void Init(App* app)
     app->renderTargets.push_back("normal color");
     app->renderTargets.push_back("albedo color");
     app->renderTargets.push_back("spec color");
+    app->renderTargets.push_back("depth color");
     app->currentRenderTarget = 0;
 
     FrameBufferInit(app);
@@ -400,7 +401,7 @@ void Init(App* app)
     app->magentaTexIdx = LoadTexture2D(app, "color_magenta.png");
 
     //Materials
-    Material planeMat = Material("plane_mat", vec3(1.0f), vec3(0.0f), vec3(0.5f), 64.0f, app->magentaTexIdx);
+    Material planeMat = Material("plane_mat", vec3(1.0f), vec3(0.0f), vec3(0.5f), 64.0f, app->whiteTexIdx);
 
     //Patrick
     app->patrickModelIdx = LoadModel(app, "Patrick/Patrick.obj");
@@ -418,32 +419,33 @@ void Init(App* app)
     app->programUniformLightingNormal = glGetUniformLocation(app->programs[app->texturedQuadProgramIdx].handle, "gNormal");
     app->programUniformLightingAlbedo = glGetUniformLocation(app->programs[app->texturedQuadProgramIdx].handle, "gAlbedo");
     app->programUniformLightingSpec = glGetUniformLocation(app->programs[app->texturedQuadProgramIdx].handle, "gSpec");
+    app->programUniformLightingDepth = glGetUniformLocation(app->programs[app->texturedQuadProgramIdx].handle, "gDepth");
     app->postProcessingProgramIdx = LoadProgram(app, "shaders.glsl", "POST_PROCESSING_PASS");
     app->programUniformPostProcessing = glGetUniformLocation(app->programs[app->postProcessingProgramIdx].handle, "finalImage");
 
     //Entities
-    Entity p1(glm::mat4(1.0f), app->patrickModelIdx);
-    p1.worldMatrix = glm::translate(p1.worldMatrix, vec3(-1.0f, 0.0f, -3.0f));
+    Entity* p1 = new Entity(glm::mat4(1.0f), app->patrickModelIdx);
+    p1->worldMatrix = glm::translate(p1->worldMatrix, vec3(-1.0f, 0.0f, -3.0f));
     app->entities.push_back(p1);
-    Entity p2(glm::mat4(1.0f), app->patrickModelIdx);
-    p2.worldMatrix = glm::translate(p2.worldMatrix, vec3(10.0f, 5.0f, 0.0f));
-    p2.worldMatrix = glm::rotate(p2.worldMatrix, glm::radians(-60.0f), glm::vec3(0.0f, 1.0f, 0.0f));
+    Entity* p2 = new Entity(glm::mat4(1.0f), app->patrickModelIdx);
+    p2->worldMatrix = glm::translate(p2->worldMatrix, vec3(10.0f, 5.0f, 0.0f));
+    p2->worldMatrix = glm::rotate(p2->worldMatrix, glm::radians(-60.0f), glm::vec3(0.0f, 1.0f, 0.0f));
     app->entities.push_back(p2);
 
-    Entity plane(glm::mat4(1.0f), app->planeModelIdx);
-    plane.worldMatrix = glm::translate(plane.worldMatrix, vec3(-0.5f, -3.5f, -0.5f));
-    plane.worldMatrix = glm::rotate(plane.worldMatrix, glm::radians(-90.0f), glm::vec3(1.0f, .0f, 0.0f));
-    plane.worldMatrix = glm::scale(plane.worldMatrix, vec3(40.0f));
+    Entity* plane = new Entity(glm::mat4(1.0f), app->planeModelIdx);
+    plane->worldMatrix = glm::translate(plane->worldMatrix, vec3(-0.5f, -3.5f, -0.5f));
+    plane->worldMatrix = glm::rotate(plane->worldMatrix, glm::radians(-90.0f), glm::vec3(1.0f, .0f, 0.0f));
+    plane->worldMatrix = glm::scale(plane->worldMatrix, vec3(40.0f));
     app->entities.push_back(plane);
 
     //Lights
-    Light l1(LightType::Directional_Light, vec3(0.0f), vec3(-0.2f, -1.0f, -0.3f), vec3(0.0f,0.0f,0.4f), vec3(0.25f), vec3(0.5f));
+    Light l1(LightType::Directional_Light, vec3(0.0f), vec3(-0.2f, -1.0f, -0.35f), vec3(0.0f,0.0f,0.4f), vec3(0.25f), vec3(0.5f));
     app->lights.push_back(l1);
     Light l2(LightType::Point_Light, vec3(-4.0f, 1.5f, -5.0f), vec3(0.0f), vec3(1.0f,0.0f,0.0f), vec3(0.5f), vec3(1.0f),0.005f);
     app->lights.push_back(l2);
-    Light l3(LightType::Point_Light, vec3(5.0f, 0.0f, -6.0f), vec3(0.0f), vec3(0.0f,1.0f,0.0f), vec3(0.5f), vec3(1.0f), 0.005f);
+    Light l3(LightType::Point_Light, vec3(4.0f, 2.0f, -6.0f), vec3(0.0f), vec3(0.0f,1.0f,0.0f), vec3(0.5f), vec3(1.0f), 0.005f);
     app->lights.push_back(l3);
-    Light l4(LightType::Point_Light, vec3(-0.5f, 0.5f, 4.0f), vec3(0.0f), vec3(0.05f, 0.05f, 0.0f), vec3(0.5f), vec3(1.0f));
+    Light l4(LightType::Point_Light, vec3(-0.5f, 0.5f, 6.0f), vec3(0.0f), vec3(0.05f, 0.05f, 0.0f), vec3(0.5f), vec3(1.0f));
     app->lights.push_back(l4);
     Light l5(LightType::Point_Light, vec3(6.5f, 6.5f, 4.5f), vec3(0.0f), vec3(1.0f), vec3(0.5f), vec3(1.0f), 0.01f);
     app->lights.push_back(l5);
@@ -681,7 +683,7 @@ void Gui(App* app)
 
 void Update(App* app)
 {
-    float currentFrame = glfwGetTime();
+    float currentFrame = (float)glfwGetTime();
     app->deltaTime = currentFrame - app->lastFrame;
     app->lastFrame = currentFrame;
 
@@ -729,14 +731,14 @@ void Update(App* app)
     {
         AlignHead(app->cbuffer, app->uniformBufferAlignment);
 
-        Entity& entity = app->entities[i];
-        glm::mat4 world = entity.worldMatrix;
+        Entity* entity = app->entities[i];
+        glm::mat4 world = entity->worldMatrix;
         glm::mat4 MVP = app->camera.projection * app->camera.view * world;
 
-        entity.localParamsOffset = app->cbuffer.head;
+        entity->localParamsOffset = app->cbuffer.head;
         PushMat4(app->cbuffer, world);
         PushMat4(app->cbuffer, MVP);
-        entity.localParamsSize = app->cbuffer.head - entity.localParamsOffset;
+        entity->localParamsSize = app->cbuffer.head - entity->localParamsOffset;
     }
 
     glUnmapBuffer(GL_UNIFORM_BUFFER);
@@ -777,11 +779,11 @@ void GeometryPass(App* app)
     for (int i = 0; i < app->entities.size(); ++i)
     {
         //Local parameters binding buffer
-        glBindBufferRange(GL_UNIFORM_BUFFER, BINDING(1), app->cbuffer.handle, app->entities[i].localParamsOffset, app->entities[i].localParamsSize);
+        glBindBufferRange(GL_UNIFORM_BUFFER, BINDING(1), app->cbuffer.handle, app->entities[i]->localParamsOffset, app->entities[i]->localParamsSize);
 
         Program& texturedMeshProgram = app->programs[app->texturedMeshProgramIdx];
         glUseProgram(texturedMeshProgram.handle);
-        Model& model = app->models[app->entities[i].modelIdx];
+        Model& model = app->models[app->entities[i]->modelIdx];
         Mesh& mesh = app->meshes[model.meshIdx];
 
         //Per submesh
@@ -839,6 +841,11 @@ void LightingPass(App* app)
     glActiveTexture(GL_TEXTURE3);
     glBindTexture(GL_TEXTURE_2D, app->specularAttachmentHandle);
     glUniform1i(app->programUniformLightingSpec, 3);
+
+    //Depth attachment
+    glActiveTexture(GL_TEXTURE4);
+    glBindTexture(GL_TEXTURE_2D, app->depthAttachmentHandle);
+    glUniform1i(app->programUniformLightingDepth, 4);
 
     glDrawElements(GL_TRIANGLES, 6, GL_UNSIGNED_INT, (void*)0);
 }

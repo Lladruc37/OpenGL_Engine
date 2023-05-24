@@ -1,6 +1,7 @@
 ///////////////////////////////////////////////////////////////////////
 ///////////////////////////////////////////////////////////////////////
 ///////////////////////////////////////////////////////////////////////
+
 #ifdef GEOMETRY_PASS
 
 #if defined(VERTEX) ///////////////////////////////////////////////////
@@ -48,6 +49,15 @@ struct Material
 
 uniform Material material;
 
+float near = 0.1; 
+float far = 10.0; 
+
+float LinearizeDepth(float depth) 
+{
+    float z = depth * 2.0 - 1.0; // back to NDC 
+    return (2.0 * near * far) / (far + near - z * (far - near));	
+}
+
 void main()
 {
 	// store the fragment position vector in the first gbuffer texture
@@ -58,6 +68,9 @@ void main()
     gAlbedo = texture(material.diffuse, vTexCoord);
     // store specular intensity in gAlbedoSpec's alpha component
     gSpec = vec4(material.specular,1.0);
+
+    float depth = LinearizeDepth(gl_FragCoord.z) / far;
+    gl_FragDepth = depth;
 }
 
 #endif
@@ -106,6 +119,7 @@ uniform sampler2D gPosition;
 uniform sampler2D gNormal;
 uniform sampler2D gAlbedo;
 uniform sampler2D gSpec;
+uniform sampler2D gDepth;
 
 layout(location=0) out vec4 gColor;
 
@@ -115,6 +129,7 @@ void main()
 	vec3 normal = texture(gNormal,vTexCoord).rgb;
 	vec3 albedo = texture(gAlbedo, vTexCoord).rgb;
 	float specularTex = texture(gSpec,vTexCoord).r;
+	float depth = texture(gDepth,vTexCoord).r;
 
 	vec3 lighting = vec3(0.0);//albedo * 0.1;
 	vec3 viewDir = normalize(uCameraPosition - fragPos);
@@ -175,6 +190,11 @@ void main()
 		case 4: //spec
 		{
 			gColor = vec4(vec3(specularTex),1.0);
+			break;
+		}
+		case 5: //depth
+		{
+			gColor = vec4(vec3(depth),1.0);
 			break;
 		}
 	}

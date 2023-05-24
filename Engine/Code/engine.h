@@ -46,6 +46,14 @@ struct Program
     std::string programName;
     u64 lastWriteTimestamp = 0;
     VertexBufferLayout vertexInputLayout;
+
+    Program(GLuint _handle = 0,u64 _lastWriteTimestamp = 0)
+        : handle(_handle),lastWriteTimestamp(_lastWriteTimestamp)
+    {
+        filepath.clear();
+        programName.clear();
+        vertexInputLayout = VertexBufferLayout();
+    }
 };
 
 struct Model
@@ -133,12 +141,12 @@ enum LightType
 struct Light
 {
     LightType type;
-    vec3 position;
-    vec3 direction;
-    vec3 ambient;
-    vec3 diffuse;
-    vec3 specular;
-    float constant;
+    vec3 position = vec3(0.0f);
+    vec3 direction = vec3(0.0f);
+    vec3 ambient = vec3(0.0f);
+    vec3 diffuse = vec3(0.0f);
+    vec3 specular = vec3(0.0f);
+    float constant = 0.0f;
 
     Light(LightType t, vec3 pos, vec3 dir, vec3 amb, vec3 diff, vec3 spec, float cons = 1.0f)
         : type(t),position(pos),direction(dir),ambient(amb),diffuse(diff),specular(spec),constant(cons)
@@ -179,7 +187,7 @@ struct App
     std::vector<Model> models;
     std::vector<Program>  programs;
     std::vector<Light> lights;
-    std::vector<Entity> entities;
+    std::vector<Entity*> entities;
 
     //--VAO index--
     GLuint vaoIdx;
@@ -240,6 +248,7 @@ struct App
     GLuint programUniformLightingNormal;
     GLuint programUniformLightingAlbedo;
     GLuint programUniformLightingSpec;
+    GLuint programUniformLightingDepth;
 
     //Post processing
     GLuint programUniformPostProcessing;
